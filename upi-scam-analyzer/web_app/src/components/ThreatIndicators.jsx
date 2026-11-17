@@ -2,64 +2,100 @@ import { Lock, Globe, AlertTriangle, LinkIcon } from './Icons';
 
 /**
  * ThreatIndicators Component
- * Displays 4 structured technical forensic checks.
- * Uses design system tokens:
- * Background: #111C2E, Border: #26364D, Primary: #F1F5F9, Secondary: #A8B5C7, Muted: #8291A6.
+ * Displays 4 structured supporting technical evidence cards.
  */
 export default function ThreatIndicators({ indicators = {}, type = 'url' }) {
-  const isUrl = type === 'url';
-  const isPhone = type === 'phone';
-  const isMessage = type === 'message' || type === 'sms';
-  const isUpi = type === 'upi';
+  const normalized = String(type || 'url').toLowerCase();
+  const isUrl = normalized === 'url';
+  const isPhone = normalized === 'phone';
+  const isMessage = normalized === 'message' || normalized === 'sms';
+  const isUpi = normalized === 'upi';
+  const isOcr = normalized === 'ocr' || normalized === 'qr';
 
   const card1 = {
-    title: isPhone ? 'Network Routing' : isMessage ? 'Channel Encryption' : isUpi ? 'Payment Rail' : 'SSL / TLS Protocol',
-    value: indicators.sslStatus || (isUrl ? 'Active (HTTPS)' : 'Standard Rail'),
-    status: indicators.sslState || 'safe',
-    icon: <Lock className="w-3.5 h-3.5" />,
-    desc: isUrl
-      ? (indicators.sslState === 'danger' ? 'Missing encryption. Traffic submitted in plaintext.' : 'HTTPS encryption actively verified.')
+    title: isUrl
+      ? 'Protocol Scheme'
+      : isPhone
+      ? 'Number Format'
+      : isMessage
+      ? 'Channel Context'
       : isUpi
-      ? 'Verified NPCI payment rail standard.'
-      : 'Transport protocol verified.',
+      ? 'Payment Rail'
+      : 'Payload Check',
+    value: indicators.sslStatus || (isUrl ? 'Scheme Checked' : 'Standard Format'),
+    status: indicators.sslState || 'safe',
+    icon: <Lock className="w-4 h-4" />,
+    desc: isUrl
+      ? indicators.sslState === 'danger'
+        ? 'Link uses plaintext HTTP or is malformed.'
+        : 'URL uses the HTTPS protocol scheme.'
+      : isPhone
+      ? 'Evaluates basic telecommunication digit structure.'
+      : isUpi
+      ? 'Checked against standard UPI VPA syntax rules.'
+      : isOcr
+      ? 'Evaluates extracted QR or screenshot payload text.'
+      : 'Evaluates text message structure and sender cues.',
   };
 
   const card2 = {
-    title: isPhone ? 'Telecom Prefix' : isMessage ? 'Urgency Analysis' : isUpi ? 'PSP Bank Routing' : 'Domain Reputation',
-    value: indicators.domainAge || (isUrl ? 'Recognized Host' : 'Standard Format'),
-    status: indicators.domainState || 'safe',
-    icon: <Globe className="w-3.5 h-3.5" />,
-    desc: isUrl
-      ? (indicators.domainState === 'danger' ? 'Raw IP address or typo-squatting pattern.' : 'Established domain with recognized history.')
+    title: isUrl
+      ? 'Host & Domain Pattern'
       : isPhone
-      ? 'Telecommunication carrier prefix check.'
+      ? 'Prefix & Carrier Pool'
+      : isMessage
+      ? 'Urgency Signals'
       : isUpi
-      ? 'Bank PSP handle syntax check.'
-      : 'Evaluated against urgency keywords.',
+      ? 'PSP Handle Registry'
+      : 'Payload Source',
+    value: indicators.domainAge || (isUrl ? 'Standard Host' : 'Standard Pattern'),
+    status: indicators.domainState || 'safe',
+    icon: <Globe className="w-4 h-4" />,
+    desc: isUrl
+      ? indicators.domainState === 'danger'
+        ? 'Raw IP host, link shortener, or hyphenated typo pattern flagged.'
+        : 'No raw IP, shortener, or multi-hyphen host pattern detected.'
+      : isPhone
+      ? 'Checks international prefixes, telemarketing pools, and synthetic patterns.'
+      : isUpi
+      ? 'Compares the @handle suffix against recognized Indian bank/PSP handles.'
+      : isOcr
+      ? 'Inspects uploaded filename or decoded UPI intent structure.'
+      : 'Checks for all-caps bursts, repeated exclamation marks, or urgency cues.',
   };
 
   const card3 = {
-    title: 'Threat Signatures',
-    value: indicators.threatSignatures || '0 Flagged Patterns',
+    title: 'Heuristic Signatures',
+    value: indicators.threatSignatures || '0 Pattern Flags',
     status: indicators.signatureState || 'safe',
-    icon: <AlertTriangle className="w-3.5 h-3.5" />,
-    desc: indicators.signatureState === 'danger'
-      ? 'Matched known scam or impersonation syntax.'
-      : indicators.signatureState === 'warning'
-      ? 'Unusual behavioral patterns detected.'
-      : 'No known malicious patterns found.',
+    icon: <AlertTriangle className="w-4 h-4" />,
+    desc:
+      indicators.signatureState === 'danger'
+        ? 'High-risk scam keywords or flagged list entries matched.'
+        : indicators.signatureState === 'warning'
+        ? 'Suspicious heuristic pattern indicators were triggered.'
+        : 'No known scam keywords or flagged entries matched.',
   };
 
   const card4 = {
-    title: isPhone ? 'Caller Identity' : isMessage ? 'Link Analysis' : isUpi ? 'Handle Structure' : 'Redirect Chain',
-    value: indicators.redirectObfuscation || 'Direct Routing',
+    title: isUrl
+      ? 'Redirect & Routing'
+      : isPhone
+      ? 'Caller ID Pattern'
+      : isMessage
+      ? 'Embedded Links'
+      : isUpi
+      ? 'VPA Structure'
+      : 'Intent Routing',
+    value: indicators.redirectObfuscation || 'Direct Structure',
     status: indicators.redirectState || 'safe',
-    icon: <LinkIcon className="w-3.5 h-3.5" />,
-    desc: indicators.redirectState === 'danger'
-      ? 'Masked destination or spoofed identity.'
-      : indicators.redirectState === 'warning'
-      ? 'URL shortener or redirect hop detected.'
-      : 'Transparent direct destination.',
+    icon: <LinkIcon className="w-4 h-4" />,
+    desc:
+      indicators.redirectState === 'danger'
+        ? 'Malformed structure or spoofed pattern detected.'
+        : indicators.redirectState === 'warning'
+        ? 'External link or redirect obfuscation pattern detected.'
+        : 'No redirect masking or structural anomaly detected.',
   };
 
   const cards = [card1, card2, card3, card4];
@@ -67,48 +103,57 @@ export default function ThreatIndicators({ indicators = {}, type = 'url' }) {
   function getBadge(status) {
     if (status === 'danger') {
       return {
-        badge: 'bg-[#DC2626]/20 text-[#DC2626] border border-[#DC2626]/40',
-        text: 'FLAGGED',
+        badge: 'bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]',
+        dot: 'bg-[#DC2626]',
+        text: 'DANGEROUS',
       };
     }
     if (status === 'warning') {
       return {
-        badge: 'bg-[#D97706]/20 text-[#D97706] border border-[#D97706]/40',
-        text: 'CAUTION',
+        badge: 'bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A]',
+        dot: 'bg-[#D97706]',
+        text: 'WARNING',
       };
     }
     return {
-      badge: 'bg-[#16A34A]/20 text-[#16A34A] border border-[#16A34A]/40',
-      text: 'PASS',
+      badge: 'bg-[#F0FDF4] text-[#16A34A] border border-[#BBF7D0]',
+      dot: 'bg-[#16A34A]',
+      text: 'SAFE',
     };
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {cards.map((c, i) => {
         const b = getBadge(c.status);
         return (
           <div
             key={i}
-            className="p-3.5 rounded-lg bg-[#111C2E] border border-[#26364D] flex flex-col justify-between"
+            className="card-enterprise p-4 flex flex-col justify-between"
           >
             <div>
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-[#8291A6]">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <span className="w-7 h-7 rounded-lg bg-[#F5F7FA] border border-[#E2E8F0] text-[#64748B] flex items-center justify-center">
                   {c.icon}
                 </span>
-                <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded ${b.badge}`}>
+                <span
+                  className={`inline-flex items-center gap-1.5 text-[10.5px] font-semibold uppercase px-2 py-0.5 rounded-md ${b.badge}`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${b.dot}`} />
                   {b.text}
                 </span>
               </div>
-              <div className="text-[11px] font-semibold text-[#8291A6] uppercase tracking-wide">
+              <div className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wider">
                 {c.title}
               </div>
-              <div className="text-xs font-mono font-medium text-[#F1F5F9] mt-0.5 truncate" title={c.value}>
+              <div
+                className="text-[13.5px] font-mono font-semibold text-[#172B4D] mt-1 truncate"
+                title={c.value}
+              >
                 {c.value}
               </div>
             </div>
-            <p className="text-[11px] text-[#A8B5C7] mt-2 border-t border-[#26364D] pt-2 leading-relaxed">
+            <p className="text-xs text-[#64748B] mt-3 border-t border-[#E2E8F0] pt-2.5 leading-relaxed">
               {c.desc}
             </p>
           </div>

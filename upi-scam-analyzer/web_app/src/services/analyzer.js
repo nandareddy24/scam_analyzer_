@@ -1,27 +1,27 @@
-// Pure, offline, rule-based scam analysis engine aligned with nandareddy24/UPI-Scam-Analyzer
-// Provides detailed Threat Score (0-25), Confidence %, Verdict Badges, Categorized Threat Indicators, Findings and Safety Advice.
+// Pure, offline, rule-based heuristic scam analysis engine.
+// Evaluates text, URL, UPI VPA, phone number, and QR/OCR payload patterns locally (0-25 score).
+// Results represent rule-based indicators, not guarantees of safety or legal determinations of fraud.
 
 function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n));
 }
 
 function calculateVerdict(score) {
-  let status = 'VERIFIED SAFE';
+  let status = 'NO INDICATORS DETECTED';
   let badgeClass = 'safe';
   let riskLevel = 'low';
 
   if (score >= 12) {
-    status = 'CRITICAL THREAT';
+    status = 'HIGH RISK INDICATORS';
     badgeClass = 'danger';
     riskLevel = 'high';
   } else if (score >= 5) {
-    status = 'SUSPICIOUS WARNING';
+    status = 'SUSPICIOUS INDICATORS';
     badgeClass = 'warning';
     riskLevel = 'medium';
   }
 
-  const confidence = clamp(Math.round(100 - score * 2.5), 85, 99);
-  return { status, badgeClass, riskLevel, confidence };
+  return { status, badgeClass, riskLevel };
 }
 
 const SCAM_KEYWORDS = {
@@ -62,14 +62,14 @@ export function analyzeMessage(message) {
   for (const [keyword, weight] of Object.entries(SCAM_KEYWORDS)) {
     if (text.includes(keyword)) {
       rawScore += weight;
-      reasons.push(`Contains suspicious phrase: "${keyword}"`);
+      reasons.push(`Contains suspicious phrase: "${keyword}".`);
     }
   }
 
   const hasLink = /https?:\/\/|www\./.test(text);
   if (hasLink) {
     rawScore += 5;
-    reasons.push('Contains an embedded external link. Scam messages often push users to click phishing URLs.');
+    reasons.push('Contains an embedded external link. Fraudulent messages often direct recipients to phishing URLs.');
   }
 
   const hasOtpSolicitation = /\b\d{4,}\b/.test(text) && text.includes('otp');
@@ -81,31 +81,31 @@ export function analyzeMessage(message) {
   const hasUrgency = (message || '').includes('!!!') || /[A-Z]{6,}/.test(message || '') || text.includes('urgent') || text.includes('expire');
   if (hasUrgency) {
     rawScore += 3;
-    reasons.push('Uses excessive urgency markers (ALL CAPS or immediate ultimatum).');
+    reasons.push('Uses urgency markers (ALL CAPS bursts, repeated exclamation marks, or immediate deadline wording).');
   }
 
   const score = clamp(rawScore, 0, 25);
   const verdict = calculateVerdict(score);
 
   if (reasons.length === 0) {
-    reasons.push('No known SMS scam patterns or malicious phishing indicators detected.');
+    reasons.push('No local SMS scam keywords, embedded links, or urgency markers were triggered.');
   }
 
   const advice = verdict.riskLevel === 'high'
-    ? 'Do NOT click links, enter PINs, or share OTPs. Immediately report this scam to National Cyber Crime Helpline (1930).'
+    ? 'Multiple high-risk message indicators were matched. Do not click links, enter UPI PINs, or share OTPs. If you experienced financial loss, call National Cyber Crime Helpline 1930 or report at cybercrime.gov.in.'
     : verdict.riskLevel === 'medium'
-    ? 'Exercise caution. Verify the sender before taking any action or clicking embedded links.'
-    : 'Message appears clean. Always remember official banks never ask for OTPs or PINs over SMS.';
+    ? 'Suspicious message indicators were matched. Verify the sender through an official bank or service contact before acting.'
+    : 'No local scam rules were triggered. This is not a guarantee of authenticity; banks never ask for OTPs or UPI PINs over SMS.';
 
   const indicators = {
-    sslStatus: 'Telephony Network Encrypted',
+    sslStatus: 'SMS / Text Input',
     sslValid: true,
     sslState: 'safe',
-    domainAge: hasUrgency ? 'High Urgency Lure' : 'Standard Tone',
+    domainAge: hasUrgency ? 'Urgency Cues Present' : 'Standard Tone',
     domainState: hasUrgency ? 'warning' : 'safe',
-    threatSignatures: hasOtpSolicitation ? 'OTP Harvest Solicitation' : reasons.length > 1 ? `${reasons.length} Heuristic Flags` : '0 Phishing Signatures',
+    threatSignatures: hasOtpSolicitation ? 'OTP Keyword + Digits' : reasons.length > 1 ? `${reasons.length} Rule Matches` : '0 Rule Matches',
     signatureState: hasOtpSolicitation ? 'danger' : reasons.length > 1 ? (score >= 12 ? 'danger' : 'warning') : 'safe',
-    redirectObfuscation: hasLink ? 'External Phishing Link Present' : 'No Web Links Embedded',
+    redirectObfuscation: hasLink ? 'External Link Detected' : 'No Web Links Embedded',
     redirectState: hasLink ? 'warning' : 'safe',
   };
 
@@ -113,7 +113,7 @@ export function analyzeMessage(message) {
     type: 'message',
     input: message,
     score,
-    result: verdict.status === 'CRITICAL THREAT' ? 'High Risk Scam Message' : verdict.status === 'SUSPICIOUS WARNING' ? 'Suspicious SMS Alert' : 'Clean SMS Message',
+    result: verdict.riskLevel === 'high' ? 'High-Risk Message Indicators' : verdict.riskLevel === 'medium' ? 'Suspicious Message Indicators' : 'No Message Indicators Detected',
     ...verdict,
     reasons,
     findings: reasons.join(' '),
@@ -144,22 +144,21 @@ export function analyzeUpiId(upiId) {
       input: upiId,
       score: 22,
       result: 'Invalid UPI Handle Format',
-      status: 'CRITICAL THREAT',
+      status: 'HIGH RISK INDICATORS',
       badgeClass: 'danger',
       riskLevel: 'high',
-      confidence: 98,
-      reasons: ['Does not follow valid UPI VPA structure (name@bank handle).'],
-      findings: 'Invalid handle structure. Standard UPI IDs follow name@bank format.',
-      advice: 'Do NOT attempt to transfer funds to malformed or unverified handles.',
+      reasons: ['Does not follow standard UPI VPA structure (username@bankhandle).'],
+      findings: 'Invalid handle structure. Standard UPI IDs follow username@bankhandle format.',
+      advice: 'Do not send money to malformed or unverified payment handles.',
       indicators: {
-        sslStatus: 'NPCI UPI Protocol',
-        sslValid: true,
-        sslState: 'safe',
-        domainAge: 'Unregistered / Malformed',
+        sslStatus: 'UPI VPA Syntax Check',
+        sslValid: false,
+        sslState: 'danger',
+        domainAge: 'Malformed / Missing Handle',
         domainState: 'danger',
-        threatSignatures: 'RFC Syntax Violation',
+        threatSignatures: 'Format Rule Violation',
         signatureState: 'danger',
-        redirectObfuscation: 'Malformed VPA Destination',
+        redirectObfuscation: 'Invalid VPA Structure',
         redirectState: 'danger',
       },
     };
@@ -169,14 +168,14 @@ export function analyzeUpiId(upiId) {
   const isRegisteredHandle = KNOWN_VALID_HANDLES.some((h) => handle.includes(h));
   if (!isRegisteredHandle) {
     rawScore += 7;
-    reasons.push(`Bank/PSP handle "@${handle}" is not a recognized major banking handle.`);
+    reasons.push(`Bank/PSP suffix "@${handle}" is not in the local list of major Indian UPI handles.`);
   }
 
   let hasLureWord = false;
   for (const word of UPI_SUSPICIOUS_WORDS) {
     if (id.includes(word)) {
       rawScore += 8;
-      reasons.push(`UPI handle contains scam lure keyword: "${word}".`);
+      reasons.push(`UPI handle contains common impersonation keyword: "${word}".`);
       hasLureWord = true;
     }
   }
@@ -185,7 +184,7 @@ export function analyzeUpiId(upiId) {
   const isNumericUsername = /^\d+$/.test(namePart);
   if (isNumericUsername) {
     rawScore += 6;
-    reasons.push('UPI ID username is entirely numeric, a common pattern in automated fraud accounts.');
+    reasons.push('Username before @ is purely numeric, which can appear in automated or temporary accounts.');
   }
 
   if (namePart.length <= 3) {
@@ -197,24 +196,24 @@ export function analyzeUpiId(upiId) {
   const verdict = calculateVerdict(score);
 
   if (reasons.length === 0) {
-    reasons.push('No recognized scam patterns found. Standard bank handle structure detected.');
+    reasons.push('No local UPI impersonation keywords or syntax issues were triggered.');
   }
 
   const advice = verdict.riskLevel === 'high'
-    ? 'High risk handle flagged for scam keyword usage. Double-check the receiver profile name before paying.'
+    ? 'High-risk handle indicators were matched. Do not approve collect requests or send funds without verifying the recipient independently.'
     : verdict.riskLevel === 'medium'
-    ? 'Unusual handle structure detected. Verify receiver identity carefully.'
-    : 'No immediate red flags. Always verify the beneficiary name shown on your payment screen.';
+    ? 'Unusual UPI handle pattern detected. Confirm the recipient identity and legal account name inside your payment app before paying.'
+    : 'No local red flags were triggered. This check cannot confirm live bank account ownership; always verify the beneficiary name displayed in your UPI app.';
 
   const indicators = {
-    sslStatus: 'NPCI Encrypted Switch',
+    sslStatus: 'UPI VPA Syntax Check',
     sslValid: true,
     sslState: 'safe',
-    domainAge: isRegisteredHandle ? `Registered PSP (@${handle})` : `Unregistered PSP (@${handle})`,
+    domainAge: isRegisteredHandle ? `Recognized Suffix (@${handle})` : `Unlisted Suffix (@${handle})`,
     domainState: isRegisteredHandle ? 'safe' : 'warning',
-    threatSignatures: hasLureWord ? 'Scam Keyword Flagged' : isNumericUsername ? 'Automated Numeric Alias' : '0 Malicious Triggers',
+    threatSignatures: hasLureWord ? 'Lure Keyword Matched' : isNumericUsername ? 'Numeric-Only Alias' : '0 Keyword Matches',
     signatureState: hasLureWord ? 'danger' : isNumericUsername ? 'warning' : 'safe',
-    redirectObfuscation: 'Direct VPA Routing',
+    redirectObfuscation: 'Standard VPA Structure',
     redirectState: 'safe',
   };
 
@@ -222,7 +221,7 @@ export function analyzeUpiId(upiId) {
     type: 'upi',
     input: upiId,
     score,
-    result: verdict.status === 'CRITICAL THREAT' ? 'Flagged Fraudulent UPI Handle' : verdict.status === 'SUSPICIOUS WARNING' ? 'Unverified Handle Alert' : 'Verified Standard UPI Handle',
+    result: verdict.riskLevel === 'high' ? 'High-Risk UPI Indicators' : verdict.riskLevel === 'medium' ? 'Suspicious UPI Indicators' : 'No UPI Indicators Detected',
     ...verdict,
     reasons,
     findings: reasons.join(' '),
@@ -261,22 +260,21 @@ export function analyzeUrl(rawUrl) {
       input: rawUrl,
       score: 20,
       result: 'Invalid URL Format',
-      status: 'CRITICAL THREAT',
+      status: 'HIGH RISK INDICATORS',
       badgeClass: 'danger',
       riskLevel: 'high',
-      confidence: 96,
-      reasons: ['Target string is not a valid URL.'],
+      reasons: ['Input could not be parsed as a valid web URL.'],
       findings: 'Malformed web address.',
-      advice: 'Do NOT click or navigate to unformatted link targets.',
+      advice: 'Do not click or open malformed link targets.',
       indicators: {
-        sslStatus: 'Invalid Link',
+        sslStatus: 'Invalid URL Syntax',
         sslValid: false,
         sslState: 'danger',
-        domainAge: 'Unregistered',
+        domainAge: 'Unparseable Host',
         domainState: 'danger',
         threatSignatures: 'Malformed Target',
         signatureState: 'danger',
-        redirectObfuscation: 'Route Error',
+        redirectObfuscation: 'Parse Error',
         redirectState: 'danger',
       },
     };
@@ -285,33 +283,33 @@ export function analyzeUrl(rawUrl) {
   const isHttps = url.protocol === 'https:';
   if (!isHttps) {
     rawScore += 5;
-    reasons.push('Link does not use SSL/HTTPS encryption (plaintext http://).');
+    reasons.push('Link uses unencrypted http:// instead of https://.');
   }
 
   const isRawIp = /^\d{1,3}(\.\d{1,3}){3}$/.test(url.hostname);
   if (isRawIp) {
     rawScore += 12;
-    reasons.push('Uses a raw IP address instead of a domain name, which is a severe phishing indicator.');
+    reasons.push('Uses a raw IPv4 address instead of a domain name, a common phishing indicator.');
   }
 
   const isShortened = SHORTENERS.some((s) => url.hostname.includes(s));
   if (isShortened) {
     rawScore += 7;
-    reasons.push('Uses URL shortening service to obfuscate actual target destination.');
+    reasons.push('Uses a URL shortening service that obscures the final destination.');
   }
 
   const hyphenCount = (url.hostname.match(/-/g) || []).length;
   const hasTyposquat = hyphenCount >= 2;
   if (hasTyposquat) {
     rawScore += 5;
-    reasons.push('Domain name contains multiple hyphens, a common typo-squatting trick.');
+    reasons.push('Hostname contains multiple hyphens, a pattern often seen in lookalike domains.');
   }
 
   let hasKeywordLure = false;
   for (const word of SUSPICIOUS_URL_WORDS) {
     if (url.hostname.includes(word) || url.pathname.toLowerCase().includes(word)) {
       rawScore += 4;
-      reasons.push(`URL path contains high-risk phishing keyword: "${word}".`);
+      reasons.push(`URL hostname or path contains banking/account lure keyword: "${word}".`);
       hasKeywordLure = true;
       break;
     }
@@ -321,24 +319,24 @@ export function analyzeUrl(rawUrl) {
   const verdict = calculateVerdict(score);
 
   if (reasons.length === 0) {
-    reasons.push('No known phishing domain signatures or suspicious redirects detected.');
+    reasons.push('No local URL phishing patterns, raw IPs, shorteners, or lure keywords were triggered.');
   }
 
   const advice = verdict.riskLevel === 'high'
-    ? 'Phishing threat identified! Do NOT enter credentials, credit card info, or bank details.'
+    ? 'Multiple phishing URL indicators were matched. Do not open this link or enter banking credentials, card numbers, or OTPs.'
     : verdict.riskLevel === 'medium'
-    ? 'Unverified domain structure. Inspect the URL bar carefully before entering information.'
-    : 'Domain checked clean. Ensure lock icon is present in your browser address bar.';
+    ? 'Suspicious URL structure detected. Type the official website address manually in your browser instead of clicking this link.'
+    : 'No local phishing URL rules were triggered. This check does not inspect live webpage content or SSL certificates; verify the domain carefully.';
 
   const indicators = {
-    sslStatus: isHttps ? 'Active (HTTPS TLS 1.3)' : 'Missing / Insecure (HTTP)',
+    sslStatus: isHttps ? 'HTTPS Scheme Present' : 'Unencrypted HTTP Scheme',
     sslValid: isHttps,
     sslState: isHttps ? 'safe' : 'danger',
-    domainAge: isRawIp ? 'Raw IP Destination' : isShortened ? 'Shortened Redirect' : hasTyposquat ? 'Newly Registered Typo' : 'Verified Authority',
+    domainAge: isRawIp ? 'Raw IPv4 Hostname' : isShortened ? 'URL Shortener Domain' : hasTyposquat ? 'Multi-Hyphen Hostname' : 'Standard Hostname Format',
     domainState: (isRawIp || isShortened || hasTyposquat) ? 'danger' : 'safe',
-    threatSignatures: hasKeywordLure ? 'Phishing Lure Detected' : reasons.length > 1 ? `${reasons.length} Flags Detected` : '0 Phishing Signatures',
+    threatSignatures: hasKeywordLure ? 'Phishing Keyword Matched' : reasons.length > 1 ? `${reasons.length} Rule Matches` : '0 Rule Matches',
     signatureState: hasKeywordLure || reasons.length > 1 ? (score >= 12 ? 'danger' : 'warning') : 'safe',
-    redirectObfuscation: isShortened ? 'Masked Link Shortener' : isRawIp ? 'Raw IPv4 Destination' : 'Direct DNS Route',
+    redirectObfuscation: isShortened ? 'Known Shortener Domain' : isRawIp ? 'Direct IPv4 Host' : 'Direct Hostname Format',
     redirectState: (isShortened || isRawIp) ? 'warning' : 'safe',
   };
 
@@ -346,7 +344,7 @@ export function analyzeUrl(rawUrl) {
     type: 'url',
     input: rawUrl,
     score,
-    result: verdict.status === 'CRITICAL THREAT' ? 'Phishing URL Detected' : verdict.status === 'SUSPICIOUS WARNING' ? 'Suspicious Link Alert' : 'Verified Safe URL',
+    result: verdict.riskLevel === 'high' ? 'High-Risk URL Indicators' : verdict.riskLevel === 'medium' ? 'Suspicious URL Indicators' : 'No URL Indicators Detected',
     ...verdict,
     reasons,
     findings: reasons.join(' '),
@@ -367,22 +365,21 @@ export function analyzePhone(phoneNumber) {
       input: phoneNumber,
       score: 22,
       result: 'Invalid Phone Number Format',
-      status: 'CRITICAL THREAT',
+      status: 'HIGH RISK INDICATORS',
       badgeClass: 'danger',
       riskLevel: 'high',
-      confidence: 98,
-      reasons: ['Phone number does not contain enough digits for valid telecommunication routing.'],
-      findings: 'Malformed telecommunication identifier.',
-      advice: 'Do not respond to truncated or spoofed numbers.',
+      reasons: ['Input contains fewer than 10 digits and does not match standard phone number length.'],
+      findings: 'Incomplete or malformed phone number.',
+      advice: 'Be cautious of truncated or spoofed caller identifiers.',
       indicators: {
-        sslStatus: 'Telecom Carrier Line',
-        sslValid: true,
-        sslState: 'safe',
-        domainAge: 'Malformed Carrier Code',
+        sslStatus: 'Incomplete Digit Count',
+        sslValid: false,
+        sslState: 'danger',
+        domainAge: 'Malformed Format',
         domainState: 'danger',
-        threatSignatures: 'Invalid Number Syntax',
+        threatSignatures: 'Length Rule Violation',
         signatureState: 'danger',
-        redirectObfuscation: 'Spoofed Caller ID',
+        redirectObfuscation: 'Invalid Number Pattern',
         redirectState: 'danger',
       },
     };
@@ -391,19 +388,19 @@ export function analyzePhone(phoneNumber) {
   const isInternationalLure = raw.startsWith('+') && !raw.startsWith('+91');
   if (isInternationalLure) {
     rawScore += 10;
-    reasons.push('Originates from an international calling prefix outside India frequently used in WhatsApp call imposter fraud.');
+    reasons.push('Uses a non-Indian international calling prefix (+other than +91), frequently seen in imposter WhatsApp and voice scams.');
   }
 
   const isTollOrTelemarketer = /^(140|1800|1900)/.test(digits);
   if (isTollOrTelemarketer) {
     rawScore += 4;
-    reasons.push('Originates from a telemarketing or toll-free pool often abused for robo-dialing scams.');
+    reasons.push('Matches a telemarketing or toll-free number prefix (140, 1800, or 1900).');
   }
 
   const isSynthetic = /^(\d)\1{7,}$/.test(digits) || digits === '1234567890';
   if (isSynthetic) {
     rawScore += 12;
-    reasons.push('Contains synthetic repeating or sequential digits typical of virtual burner numbers and spoofed caller IDs.');
+    reasons.push('Contains repeating or sequential placeholder digits typical of synthetic or spoofed numbers.');
   }
 
   const KNOWN_FLAGGED_NUMBERS = [
@@ -413,31 +410,31 @@ export function analyzePhone(phoneNumber) {
   const isBlacklisted = KNOWN_FLAGGED_NUMBERS.includes(digits.slice(-10));
   if (isBlacklisted) {
     rawScore += 15;
-    reasons.push('Flagged in National Cyber Crime reporting registry for multiple financial fraud complaints.');
+    reasons.push('Matched the local sample flagged-number watchlist (static demo list, not connected to a live government registry).');
   }
 
   const score = clamp(rawScore, 0, 25);
   const verdict = calculateVerdict(score);
 
   if (reasons.length === 0) {
-    reasons.push('No malicious fraud reports or automated spoofing signatures associated with this phone identifier.');
+    reasons.push('No local international-prefix, telemarketer, synthetic-digit, or sample watchlist rules were triggered.');
   }
 
   const advice = verdict.riskLevel === 'high'
-    ? 'High risk caller! Do NOT answer calls, share OTPs, or install remote access software (AnyDesk, TeamViewer).'
+    ? 'High-risk caller indicators were matched. Do not share OTPs, UPI PINs, or install remote-access apps (such as AnyDesk or TeamViewer).'
     : verdict.riskLevel === 'medium'
-    ? 'Potential spam or unverified gateway. Do not conduct financial transactions requested over this phone number.'
-    : 'No active threat records. Remember banks and payment operators never call asking for PINs or OTPs.';
+    ? 'Suspicious prefix or caller pattern detected. Verify the caller using an official number from your bank card or app.'
+    : 'No local phone pattern flags were triggered. This check cannot confirm caller identity; never share OTPs or PINs over phone calls.';
 
   const indicators = {
-    sslStatus: 'Telecom Gateway Encrypted',
+    sslStatus: 'Valid Digit Length',
     sslValid: true,
     sslState: 'safe',
-    domainAge: isInternationalLure ? 'International Gateway (+VoIP)' : isSynthetic ? 'Virtual Burner Pool' : 'Verified Cellular Subscriber',
+    domainAge: isInternationalLure ? 'Non-+91 International Prefix' : isSynthetic ? 'Synthetic Digit Pattern' : 'Standard Domestic Format',
     domainState: (isInternationalLure || isSynthetic) ? 'danger' : 'safe',
-    threatSignatures: isBlacklisted ? 'Blacklisted by 1930 Registry' : reasons.length > 1 ? `${reasons.length} Telephony Flags` : '0 Spam Complaints',
+    threatSignatures: isBlacklisted ? 'Matched Local Watchlist' : reasons.length > 1 ? `${reasons.length} Pattern Flags` : '0 Pattern Flags',
     signatureState: isBlacklisted ? 'danger' : reasons.length > 1 ? 'warning' : 'safe',
-    redirectObfuscation: isSynthetic ? 'Caller ID Spoofing Flagged' : 'Direct Cellular Route',
+    redirectObfuscation: isSynthetic ? 'Synthetic / Placeholder Pattern' : 'Standard Numeric Pattern',
     redirectState: isSynthetic ? 'danger' : 'safe',
   };
 
@@ -445,7 +442,7 @@ export function analyzePhone(phoneNumber) {
     type: 'phone',
     input: phoneNumber,
     score,
-    result: verdict.status === 'CRITICAL THREAT' ? 'Reported Fraud Caller ID' : verdict.status === 'SUSPICIOUS WARNING' ? 'Suspicious / Spam Caller' : 'Verified Standard Caller',
+    result: verdict.riskLevel === 'high' ? 'High-Risk Phone Indicators' : verdict.riskLevel === 'medium' ? 'Suspicious Phone Indicators' : 'No Phone Indicators Detected',
     ...verdict,
     reasons,
     findings: reasons.join(' '),
@@ -457,29 +454,31 @@ export function analyzePhone(phoneNumber) {
 export function analyzeOcrQr(imageName, sampleText = '') {
   const text = (sampleText || '').toLowerCase();
   if (text.includes('upi://pay') || text.includes('paytm') || text.includes('gpay')) {
-    return analyzeMessage(sampleText || 'Payment request QR code scanned');
+    return analyzeMessage(sampleText || 'Payment request QR code payload');
   }
   return {
     type: 'ocr',
-    input: imageName || 'Scanned Screenshot / QR',
+    input: imageName || 'Uploaded Image / Payload',
     score: 3,
-    result: 'Scanned Image Verified Safe',
-    status: 'VERIFIED SAFE',
+    result: 'No Payload Indicators Detected',
+    status: 'NO INDICATORS DETECTED',
     badgeClass: 'safe',
     riskLevel: 'low',
-    confidence: 94,
-    reasons: ['Screenshot image scanned. No fraudulent UPI requests or suspicious links extracted.'],
-    findings: 'OCR text extraction completed. Payload analyzed clean.',
-    advice: 'No threat detected in scanned QR image.',
+    reasons: [
+      'No suspicious keywords or UPI intent patterns were matched in the provided payload text.',
+      'Note: client-side inspection checks provided text/URI payloads and file metadata; it does not run automated server-side OCR on image pixels.',
+    ],
+    findings: 'Local heuristic check completed on provided payload text.',
+    advice: 'No local rules were triggered. Always verify the recipient name and payment amount inside your UPI app before authorizing.',
     indicators: {
-      sslStatus: 'Visual QR Payload Clean',
+      sslStatus: 'Payload Input Checked',
       sslValid: true,
       sslState: 'safe',
-      domainAge: 'Decoded Static Bitmap',
+      domainAge: 'Provided Text / Filename',
       domainState: 'safe',
-      threatSignatures: '0 Malicious UPI Injections',
+      threatSignatures: '0 Keyword Matches',
       signatureState: 'safe',
-      redirectObfuscation: 'Direct Intent Uri',
+      redirectObfuscation: 'No Intent Anomaly Flagged',
       redirectState: 'safe',
     },
   };

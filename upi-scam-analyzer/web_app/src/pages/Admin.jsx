@@ -1,59 +1,61 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import AppLayout from '../components/AppLayout';
 import { getCurrentUser } from '../services/authService';
-import { Lock, Shield, CheckCircle2, Ban, AlertTriangle, User } from '../components/Icons';
+import { getSubmittedReports, formatScanTimestamp } from '../services/scanHistory';
+import { Lock, AlertTriangle, Info, ArrowRight } from '../components/Icons';
+
+const SESSION_WATCHLIST_KEY = 'scam_analyzer_session_watchlist';
 
 export default function Admin() {
   const currentUser = getCurrentUser();
-  const userEmail = currentUser?.email || 'nandakumarreddy63@gmail.com';
+  const userEmail = currentUser?.email || 'Not signed in';
   const isAdmin = userEmail === 'nandakumarreddy63@gmail.com';
 
-  const [reports, setReports] = useState([
-    {
-      id: 1,
-      type: 'UPI',
-      target: 'refund-fake-helpdesk@ybl',
-      reason: 'Claimed to refund Google Pay transaction of ₹4,999, asked to accept UPI request.',
-      proof: 'Screenshot evidence: Ask to approve ₹4999 collect request.',
-      status: 'Pending',
-      date: '10 mins ago',
-    },
-    {
-      id: 2,
-      type: 'URL',
-      target: 'http://192.168.1.55/update-kyc-bank',
-      reason: 'SMS link claiming SBI account will be blocked if KYC not updated in 2 hours.',
-      proof: 'SMS header VK-SBIINB: Click http://192.168.1.55/update-kyc-bank.',
-      status: 'Pending',
-      date: '1 hour ago',
-    },
-    {
-      id: 3,
-      type: 'SMS',
-      target: '+919876543210',
-      reason: 'Lottery scam message offering ₹25 Lakhs cash prize via KBC WhatsApp.',
-      proof: 'Message text: Dear customer, your number won ₹25 Lakhs in Lucky Draw.',
-      status: 'Pending',
-      date: '3 hours ago',
-    },
-  ]);
+  const [reports, setReports] = useState([]);
+  const [watchlist, setWatchlist] = useState([]);
+  const [newTarget, setNewTarget] = useState('');
+  const [newType, setNewType] = useState('UPI');
+  const [formError, setFormError] = useState('');
 
-  const [blacklists, setBlacklists] = useState([
-    { target: 'lottery-winner-kbc@ybl', type: 'UPI', addedBy: 'nandakumarreddy63@gmail.com', date: 'Yesterday' },
-    { target: 'http://verify-bank-account-gpay.com', type: 'URL', addedBy: 'nandakumarreddy63@gmail.com', date: '2 days ago' },
-  ]);
+  useEffect(() => {
+    const submitted = getSubmittedReports().map((rep) => ({
+      ...rep,
+      status: rep.status === 'Logged for Review' ? 'Pending' : rep.status,
+    }));
+    setReports(submitted);
 
-  const [newBlacklistTarget, setNewBlacklistTarget] = useState('');
-  const [newBlacklistType, setNewBlacklistType] = useState('UPI');
+    try {
+      const savedWatchlist = localStorage.getItem(SESSION_WATCHLIST_KEY);
+      if (savedWatchlist) {
+        const parsed = JSON.parse(savedWatchlist);
+        if (Array.isArray(parsed)) setWatchlist(parsed);
+      }
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
+
+  function persistWatchlist(nextList) {
+    setWatchlist(nextList);
+    try {
+      localStorage.setItem(SESSION_WATCHLIST_KEY, JSON.stringify(nextList));
+    } catch {
+      // Ignore storage errors
+    }
+  }
 
   function handleApprove(id) {
     setReports((prev) =>
       prev.map((r) => {
         if (r.id === id) {
-          setBlacklists((bl) => [
-            ...bl,
-            { target: r.target, type: r.type, addedBy: userEmail, date: 'Just now' },
-          ]);
+          const entry = {
+            target: r.target,
+            type: r.type,
+            addedBy: userEmail,
+            timestamp: new Date().toISOString(),
+          };
+          persistWatchlist([entry, ...watchlist]);
           return { ...r, status: 'Approved' };
         }
         return r;
@@ -67,14 +69,22 @@ export default function Admin() {
     );
   }
 
-  function handleAddBlacklist(e) {
+  function handleAddWatchlist(e) {
     e.preventDefault();
-    if (!newBlacklistTarget.trim()) return;
-    setBlacklists((prev) => [
-      ...prev,
-      { target: newBlacklistTarget.trim(), type: newBlacklistType, addedBy: userEmail, date: 'Just now' },
-    ]);
-    setNewBlacklistTarget('');
+    const cleaned = newTarget.trim();
+    if (!cleaned) {
+      setFormError('Enter an identifier before adding it to the session watchlist.');
+      return;
+    }
+    setFormError('');
+    const entry = {
+      target: cleaned,
+      type: newType,
+      addedBy: userEmail,
+      timestamp: new Date().toISOString(),
+    };
+    persistWatchlist([entry, ...watchlist]);
+    setNewTarget('');
   }
 
   const pendingCount = reports.filter((r) => r.status === 'Pending').length;
@@ -82,198 +92,242 @@ export default function Admin() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        {/* Admin Header */}
-        <div className="bg-[#111C2E] text-[#F1F5F9] p-5 rounded-lg border border-[#26364D] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Dark Navy Security Header Panel */}
+        <div className="panel-navy-gradient text-white p-6 rounded-[10px] shadow-[0_1px_3px_rgba(20,36,58,0.12)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="bg-[#3B82F6]/10 text-[#3B82F6] border border-[#3B82F6]/30 text-[10px] font-bold uppercase px-2 py-0.5 rounded tracking-wider font-mono">
-                Admin Console
+            <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
+              <span className="bg-white/10 text-[#93C5FD] border border-white/15 text-xs font-semibold uppercase px-2.5 py-0.5 rounded tracking-wider font-mono">
+                Session Moderation
               </span>
-              <span className="text-xs text-[#8291A6] font-mono">{userEmail}</span>
+              <span className="text-sm text-[#CBD5E1] font-mono">{userEmail}</span>
             </div>
-            <h1 className="text-lg font-semibold tracking-tight text-[#F1F5F9]">
-              Security Moderation Console
+            <h1 className="text-2xl font-bold tracking-tight text-white">
+              Local Report Moderation Console
             </h1>
-            <p className="text-xs text-[#A8B5C7] mt-0.5">
-              Review flagged payment entities, verify reports, and manage heuristic blacklists.
+            <p className="text-sm text-[#CBD5E1] mt-1">
+              Review fraud reports logged during this browser session and manage a local session watchlist.
             </p>
           </div>
-          <div className="w-9 h-9 rounded-md bg-[#0F172A] border border-[#26364D] text-[#A8B5C7] flex items-center justify-center flex-shrink-0">
-            <Lock className="w-4 h-4" />
+          <div className="w-10 h-10 rounded-lg bg-white/10 border border-white/15 text-[#93C5FD] flex items-center justify-center flex-shrink-0">
+            <Lock className="w-5 h-5" />
           </div>
+        </div>
+
+        {/* Scope Notice */}
+        <div className="bg-white border border-[#E2E8F0] text-[#475569] p-4 rounded-lg text-sm flex items-start gap-3">
+          <Info className="w-5 h-5 text-[#2563EB] flex-shrink-0 mt-0.5" />
+          <p className="leading-relaxed">
+            <strong className="text-[#0F172A]">Local Session Scope:</strong> This console displays reports submitted from this browser via the Fraud Entity Reporting page. Moderation actions update local browser storage only and do not publish to an external threat-intelligence feed or law enforcement system.
+          </p>
         </div>
 
         {!isAdmin && (
-          <div className="bg-[#D97706]/10 border border-[#D97706]/30 text-[#D97706] p-3 rounded-md text-xs font-medium flex items-center gap-2.5">
-            <AlertTriangle className="w-4 h-4 text-[#D97706] flex-shrink-0" />
-            <span>Administrator preview active for demonstration. Production actions require root permissions.</span>
+          <div className="bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E] p-3.5 rounded-lg text-sm font-medium flex items-center gap-2.5">
+            <AlertTriangle className="w-5 h-5 text-[#D97706] flex-shrink-0" />
+            <span>Signed in as a standard user account. Administrative actions apply only to your local browser session.</span>
           </div>
         )}
 
-        {/* Operational Queue Metrics */}
+        {/* Real Session Counts */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-[#111C2E] p-4 rounded-lg border border-[#26364D]">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#8291A6]">Pending Review</div>
-            <div className="text-2xl font-bold text-[#D97706] font-mono mt-1">{pendingCount}</div>
-            <div className="text-[11px] text-[#8291A6] mt-0.5">Awaiting moderator verdict</div>
+          <div className="bg-white p-5 rounded-lg border border-[#E2E8F0]">
+            <div className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">Pending Review</div>
+            <div className="text-3xl font-bold text-[#D97706] font-mono mt-1">{pendingCount}</div>
+            <div className="text-xs text-[#64748B] mt-1">Submitted in this browser</div>
           </div>
 
-          <div className="bg-[#111C2E] p-4 rounded-lg border border-[#26364D]">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#8291A6]">Total Submissions</div>
-            <div className="text-2xl font-bold text-[#3B82F6] font-mono mt-1">{reports.length}</div>
-            <div className="text-[11px] text-[#8291A6] mt-0.5">Logged in current session</div>
+          <div className="bg-white p-5 rounded-lg border border-[#E2E8F0]">
+            <div className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">Total Session Reports</div>
+            <div className="text-3xl font-bold text-[#2563EB] font-mono mt-1">{reports.length}</div>
+            <div className="text-xs text-[#64748B] mt-1">Logged via Fraud Entity Reporting</div>
           </div>
 
-          <div className="bg-[#111C2E] p-4 rounded-lg border border-[#26364D]">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#8291A6]">Blacklisted Entities</div>
-            <div className="text-2xl font-bold text-[#16A34A] font-mono mt-1">{blacklists.length}</div>
-            <div className="text-[11px] text-[#8291A6] mt-0.5">Active heuristic rules</div>
+          <div className="bg-white p-5 rounded-lg border border-[#E2E8F0]">
+            <div className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">Session Watchlist</div>
+            <div className="text-3xl font-bold text-[#16A34A] font-mono mt-1">{watchlist.length}</div>
+            <div className="text-xs text-[#64748B] mt-1">Locally recorded identifiers</div>
           </div>
         </div>
 
-        {/* Community Reports Moderation Queue */}
-        <div className="bg-[#111C2E] p-5 rounded-lg border border-[#26364D] space-y-4">
-          <div className="border-b border-[#26364D] pb-3 flex items-center justify-between">
+        {/* User Report Queue */}
+        <div className="bg-white p-6 rounded-lg border border-[#E2E8F0] space-y-4">
+          <div className="border-b border-[#E2E8F0] pb-3.5 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold text-[#F1F5F9]">User Report Moderation Queue</h3>
-              <p className="text-[#A8B5C7] text-xs mt-0.5">
-                Approving a submitted threat adds the identifier directly to the heuristic blacklist database.
+              <h2 className="text-base font-semibold text-[#0F172A]">Submitted Reports Queue</h2>
+              <p className="text-[#475569] text-sm mt-0.5">
+                Approving a report copies the identifier into the local session watchlist below.
               </p>
             </div>
-            <div className="text-xs font-mono text-[#8291A6]">
-              {reports.length} Records
+            <div className="text-xs font-mono text-[#64748B]">
+              {reports.length} {reports.length === 1 ? 'Record' : 'Records'}
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-[#080F1D] text-[#8291A6] font-semibold uppercase text-[10px] tracking-wider border-b border-[#26364D]">
-                  <th className="p-3">Type</th>
-                  <th className="p-3">Target</th>
-                  <th className="p-3">Incident Description</th>
-                  <th className="p-3">Proof Evidence</th>
-                  <th className="p-3 text-center">Status</th>
-                  <th className="p-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#26364D]">
-                {reports.map((rep) => (
-                  <tr key={rep.id} className="hover:bg-[#16243B] transition-colors">
-                    <td className="p-3">
-                      <span className="bg-[#0F172A] text-[#A8B5C7] font-mono text-[10px] font-bold px-2 py-0.5 rounded border border-[#26364D]">
-                        {rep.type}
-                      </span>
-                    </td>
-                    <td className="p-3 font-semibold text-[#F1F5F9] font-mono">{rep.target}</td>
-                    <td className="p-3 text-[#A8B5C7] max-w-xs">{rep.reason}</td>
-                    <td className="p-3 text-[#8291A6] text-[11px] font-mono">{rep.proof}</td>
-                    <td className="p-3 text-center">
-                      <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded uppercase tracking-wider border ${
-                        rep.status === 'Approved' ? 'bg-[#16A34A]/10 text-[#16A34A] border-[#16A34A]/30' :
-                        rep.status === 'Rejected' ? 'bg-[#DC2626]/10 text-[#DC2626] border-[#DC2626]/30' :
-                        'bg-[#D97706]/10 text-[#D97706] border-[#D97706]/30'
-                      }`}>
-                        {rep.status}
-                      </span>
-                    </td>
-                    <td className="p-3 text-right">
-                      {rep.status === 'Pending' ? (
-                        <div className="flex gap-1.5 justify-end">
-                          <button
-                            onClick={() => handleApprove(rep.id)}
-                            className="bg-[#16A34A] hover:bg-[#15803d] text-white px-2.5 py-1 rounded-md text-xs font-semibold transition-colors"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => handleReject(rep.id)}
-                            className="bg-[#0F172A] hover:bg-[#16243B] text-[#A8B5C7] border border-[#26364D] px-2.5 py-1 rounded-md text-xs font-semibold transition-colors"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-[#8291A6] text-xs">Reviewed</span>
-                      )}
-                    </td>
+          {reports.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr className="bg-[#F8FAFC] text-[#64748B] font-semibold uppercase text-xs tracking-wider border-b border-[#E2E8F0]">
+                    <th className="p-3.5">Type</th>
+                    <th className="p-3.5">Identifier</th>
+                    <th className="p-3.5">Incident Description</th>
+                    <th className="p-3.5">Evidence Notes</th>
+                    <th className="p-3.5 text-center">Status</th>
+                    <th className="p-3.5 text-right">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-[#E2E8F0]">
+                  {reports.map((rep) => (
+                    <tr key={rep.id} className="hover:bg-[#F8FAFC] transition-colors">
+                      <td className="p-3.5">
+                        <span className="bg-[#F1F5F9] text-[#334155] font-mono text-xs font-semibold px-2 py-0.5 rounded border border-[#E2E8F0]">
+                          {rep.type}
+                        </span>
+                      </td>
+                      <td className="p-3.5 font-semibold text-[#0F172A] font-mono">{rep.target}</td>
+                      <td className="p-3.5 text-[#334155] max-w-xs">{rep.reason}</td>
+                      <td className="p-3.5 text-[#64748B] text-xs font-mono">{rep.proofText || 'None provided'}</td>
+                      <td className="p-3.5 text-center">
+                        <span
+                          className={`text-xs font-semibold font-mono px-2.5 py-0.5 rounded uppercase tracking-wider border ${
+                            rep.status === 'Approved'
+                              ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]'
+                              : rep.status === 'Rejected'
+                              ? 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]'
+                              : 'bg-[#FFFBEB] text-[#B45309] border-[#FDE68A]'
+                          }`}
+                        >
+                          {rep.status}
+                        </span>
+                      </td>
+                      <td className="p-3.5 text-right">
+                        {rep.status === 'Pending' ? (
+                          <div className="flex gap-2 justify-end">
+                            <button
+                              type="button"
+                              onClick={() => handleApprove(rep.id)}
+                              className="bg-[#16A34A] hover:bg-[#15803d] text-white px-3 py-1.5 rounded-md text-xs font-semibold transition-colors"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleReject(rep.id)}
+                              className="bg-white hover:bg-[#F8FAFC] text-[#475569] border border-[#CBD5E1] px-3 py-1.5 rounded-md text-xs font-semibold transition-colors"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-[#64748B] text-xs">Reviewed</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="p-8 text-center space-y-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
+              <p className="text-sm text-[#475569]">
+                No fraud reports have been submitted in this browser session yet.
+              </p>
+              <Link to="/report" className="btn-secondary">
+                <span>Open Fraud Entity Reporting</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          )}
         </div>
 
-        {/* Add To Blacklist Section */}
-        <div className="bg-[#111C2E] p-5 rounded-lg border border-[#26364D] space-y-3">
-          <div className="border-b border-[#26364D] pb-2.5">
-            <h3 className="text-sm font-semibold text-[#F1F5F9]">Direct Blacklist Entry</h3>
-            <p className="text-[#A8B5C7] text-xs mt-0.5">
-              Add known fraudulent UPI handles or phishing links directly into the system database.
+        {/* Manual Session Watchlist Entry */}
+        <div className="bg-white p-6 rounded-lg border border-[#E2E8F0] space-y-4">
+          <div className="border-b border-[#E2E8F0] pb-3">
+            <h2 className="text-base font-semibold text-[#0F172A]">Add Session Watchlist Entry</h2>
+            <p className="text-[#475569] text-sm mt-0.5">
+              Record a suspicious UPI handle, URL, or phone number in your local session watchlist.
             </p>
           </div>
 
-          <form onSubmit={handleAddBlacklist} className="flex gap-2 flex-col sm:flex-row">
+          {formError && (
+            <div className="text-sm text-[#B91C1C] bg-[#FEF2F2] border border-[#FECACA] rounded-lg px-3.5 py-2.5">
+              {formError}
+            </div>
+          )}
+
+          <form onSubmit={handleAddWatchlist} className="flex gap-2.5 flex-col sm:flex-row">
             <select
-              value={newBlacklistType}
-              onChange={(e) => setNewBlacklistType(e.target.value)}
-              className="px-3 py-2 bg-[#080F1D] border border-[#26364D] rounded-md text-xs font-semibold text-[#F1F5F9] focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
+              value={newType}
+              onChange={(e) => setNewType(e.target.value)}
+              className="h-11 px-3.5 bg-white border border-[#CBD5E1] rounded-lg text-sm font-medium text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20"
             >
               <option value="UPI">UPI VPA</option>
               <option value="URL">Phishing URL</option>
-              <option value="SMS">SMS / Phone</option>
+              <option value="SMS">SMS / Message</option>
+              <option value="PHONE">Phone Number</option>
             </select>
 
             <input
               type="text"
               placeholder="e.g. scammer-vpa@ybl or http://phishing-site.com"
-              value={newBlacklistTarget}
-              onChange={(e) => setNewBlacklistTarget(e.target.value)}
-              className="flex-1 px-3 py-2 bg-[#080F1D] border border-[#26364D] rounded-md text-xs text-[#F1F5F9] placeholder-[#8291A6] focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] font-mono"
+              value={newTarget}
+              onChange={(e) => {
+                setNewTarget(e.target.value);
+                if (formError) setFormError('');
+              }}
+              className="flex-1 h-11 px-3.5 bg-white border border-[#CBD5E1] rounded-lg text-[15px] text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 font-mono"
             />
 
             <button
               type="submit"
-              className="bg-[#3B82F6] hover:bg-[#2563EB] text-white px-4 py-2 rounded-md text-xs font-semibold transition-colors whitespace-nowrap"
+              className="btn-primary h-11 whitespace-nowrap"
             >
-              Add to Blacklist
+              Add to Watchlist
             </button>
           </form>
         </div>
 
-        {/* Active Blacklisted Database Table */}
-        <div className="bg-[#111C2E] p-5 rounded-lg border border-[#26364D] space-y-3">
-          <div className="flex items-center justify-between border-b border-[#26364D] pb-2.5">
-            <h3 className="text-sm font-semibold text-[#F1F5F9]">Active Blacklisted Entities</h3>
-            <span className="text-xs text-[#8291A6] font-mono">{blacklists.length} Identifiers</span>
+        {/* Local Watchlist Table */}
+        <div className="bg-white p-6 rounded-lg border border-[#E2E8F0] space-y-4">
+          <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+            <h2 className="text-base font-semibold text-[#0F172A]">Local Session Watchlist</h2>
+            <span className="text-xs text-[#64748B] font-mono">{watchlist.length} Entries</span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-[#080F1D] text-[#8291A6] font-semibold uppercase text-[10px] tracking-wider border-b border-[#26364D]">
-                  <th className="p-3">Type</th>
-                  <th className="p-3">Identifier / Target</th>
-                  <th className="p-3">Logged By</th>
-                  <th className="p-3 text-right">Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#26364D]">
-                {blacklists.map((b, idx) => (
-                  <tr key={idx} className="hover:bg-[#16243B] transition-colors">
-                    <td className="p-3">
-                      <span className="bg-[#DC2626]/10 text-[#DC2626] border border-[#DC2626]/30 text-[10px] font-mono font-bold px-2 py-0.5 rounded">
-                        {b.type}
-                      </span>
-                    </td>
-                    <td className="p-3 font-semibold text-[#F1F5F9] font-mono">{b.target}</td>
-                    <td className="p-3 text-[#A8B5C7] text-xs">{b.addedBy}</td>
-                    <td className="p-3 text-right text-[#8291A6] text-xs">{b.date}</td>
+          {watchlist.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr className="bg-[#F8FAFC] text-[#64748B] font-semibold uppercase text-xs tracking-wider border-b border-[#E2E8F0]">
+                    <th className="p-3.5">Type</th>
+                    <th className="p-3.5">Identifier / Target</th>
+                    <th className="p-3.5">Recorded By</th>
+                    <th className="p-3.5 text-right">Timestamp</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-[#E2E8F0]">
+                  {watchlist.map((b, idx) => (
+                    <tr key={idx} className="hover:bg-[#F8FAFC] transition-colors">
+                      <td className="p-3.5">
+                        <span className="bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA] text-xs font-mono font-semibold px-2 py-0.5 rounded">
+                          {b.type}
+                        </span>
+                      </td>
+                      <td className="p-3.5 font-semibold text-[#0F172A] font-mono">{b.target}</td>
+                      <td className="p-3.5 text-[#475569]">{b.addedBy}</td>
+                      <td className="p-3.5 text-right text-[#64748B] text-xs font-mono">
+                        {formatScanTimestamp(b.timestamp)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="p-8 text-center text-sm text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
+              No watchlist entries have been recorded in this session yet.
+            </div>
+          )}
         </div>
       </div>
     </AppLayout>

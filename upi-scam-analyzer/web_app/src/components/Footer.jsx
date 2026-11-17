@@ -3,88 +3,94 @@ import { Shield, PhoneCall, ExternalLink, Lock } from './Icons';
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[#26364D] bg-[#0B1220] text-[#A8B5C7] text-xs mt-auto">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          {/* Brand & Purpose */}
-          <div className="md:col-span-2 space-y-3">
+    <footer className="border-t border-[#E2E8F0] bg-white text-[#64748B] text-[13px] mt-auto">
+      <div className="max-w-[1360px] mx-auto px-5 sm:px-7 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-6">
+          {/* Brand & Scope */}
+          <div className="md:col-span-2 space-y-2.5">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-[#3B82F6] text-white flex items-center justify-center">
-                <Shield className="w-3.5 h-3.5" />
+              <div className="w-7 h-7 rounded-lg accent-blue-gradient text-white flex items-center justify-center">
+                <Shield className="w-4 h-4 text-white" />
               </div>
-              <span className="font-semibold text-[#F1F5F9] text-sm tracking-tight">
+              <span className="font-bold text-[#14243A] text-sm tracking-tight">
                 UPI Scam Analyzer
               </span>
             </div>
-            <p className="text-[#A8B5C7] text-xs leading-relaxed max-w-md">
-              Specialized cybersecurity analysis utility for inspecting payment identifiers, suspicious URLs, caller IDs, and fraudulent SMS patterns.
+            <p className="text-[#64748B] text-[13px] leading-relaxed max-w-md">
+              Independent rule-based inspection tool for checking suspicious URLs, SMS messages, UPI IDs, phone numbers, and QR payloads. Results are heuristic indicators, not guarantees of transaction safety.
             </p>
-            <div className="flex items-center gap-2 text-[#A8B5C7] text-xs">
-              <PhoneCall className="w-3.5 h-3.5 text-[#16A34A]" />
-              <span>National Cyber Crime Helpline: <strong className="text-[#16A34A]">1930</strong> (24x7 Toll Free)</span>
+            <div className="flex items-center gap-2 text-[#172B4D] text-[13px]">
+              <PhoneCall className="w-3.5 h-3.5 text-[#16A34A] flex-shrink-0" />
+              <span>
+                National Cyber Crime Helpline (India): <strong className="text-[#16A34A] font-mono">1930</strong> (I4C, Ministry of Home Affairs)
+              </span>
             </div>
+            <p className="text-xs text-[#64748B] leading-relaxed max-w-md">
+              Not affiliated with, endorsed by, or certified by NPCI, RBI, I4C, any bank, or the Government of India.
+            </p>
           </div>
 
-          {/* Verification Tools */}
+          {/* Inspection Modules */}
           <div>
-            <h4 className="font-semibold text-[#F1F5F9] text-xs uppercase tracking-wider mb-3">
+            <h4 className="font-semibold text-[#14243A] text-[11px] uppercase tracking-wider mb-3">
               Inspection Modules
             </h4>
-            <ul className="space-y-2 text-xs">
-              <li><Link to="/url" className="text-[#A8B5C7] hover:text-[#3B82F6] transition-colors">URL & Link Scanner</Link></li>
-              <li><Link to="/message" className="text-[#A8B5C7] hover:text-[#3B82F6] transition-colors">SMS & Message Checker</Link></li>
-              <li><Link to="/upi" className="text-[#A8B5C7] hover:text-[#3B82F6] transition-colors">UPI VPA Inspector</Link></li>
-              <li><Link to="/ocr_qr" className="text-[#A8B5C7] hover:text-[#3B82F6] transition-colors">QR & Screenshot OCR</Link></li>
-              <li><Link to="/report" className="text-[#A8B5C7] hover:text-[#3B82F6] transition-colors">Report Incident</Link></li>
+            <ul className="space-y-2 text-[13px]">
+              <li><Link to="/url" className="text-[#64748B] hover:text-[#2563EB] transition-colors">URL &amp; Domain Scanner</Link></li>
+              <li><Link to="/message" className="text-[#64748B] hover:text-[#2563EB] transition-colors">SMS &amp; Message Analyzer</Link></li>
+              <li><Link to="/upi" className="text-[#64748B] hover:text-[#2563EB] transition-colors">UPI VPA Checker</Link></li>
+              <li><Link to="/phone" className="text-[#64748B] hover:text-[#2563EB] transition-colors">Phone Number Analysis</Link></li>
+              <li><Link to="/ocr_qr" className="text-[#64748B] hover:text-[#2563EB] transition-colors">QR &amp; Screenshot OCR</Link></li>
+              <li><Link to="/report" className="text-[#64748B] hover:text-[#2563EB] transition-colors">Fraud Entity Reporting</Link></li>
             </ul>
           </div>
 
-          {/* Trust & Compliance */}
+          {/* Legal & External Resources */}
           <div>
-            <h4 className="font-semibold text-[#F1F5F9] text-xs uppercase tracking-wider mb-3">
-              Trust & Compliance
+            <h4 className="font-semibold text-[#14243A] text-[11px] uppercase tracking-wider mb-3">
+              Legal &amp; Official Portals
             </h4>
-            <ul className="space-y-2 text-xs">
-              <li><Link to="/privacy" className="text-[#A8B5C7] hover:text-[#3B82F6] transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="text-[#A8B5C7] hover:text-[#3B82F6] transition-colors">Terms of Service</Link></li>
+            <ul className="space-y-2 text-[13px]">
+              <li><Link to="/privacy" className="text-[#64748B] hover:text-[#2563EB] transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="text-[#64748B] hover:text-[#2563EB] transition-colors">Terms and Conditions</Link></li>
               <li>
-                <a 
-                  href="https://cybercrime.gov.in" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="inline-flex items-center gap-1 text-[#A8B5C7] hover:text-[#16A34A] transition-colors"
+                <a
+                  href="https://cybercrime.gov.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[#64748B] hover:text-[#16A34A] transition-colors"
                 >
-                  <span>cybercrime.gov.in</span>
-                  <ExternalLink className="w-3 h-3 text-[#8291A6]" />
+                  <span>cybercrime.gov.in (Official)</span>
+                  <ExternalLink className="w-3 h-3" />
                 </a>
               </li>
               <li>
-                <a 
-                  href="https://www.npci.org.in" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="inline-flex items-center gap-1 text-[#A8B5C7] hover:text-[#16A34A] transition-colors"
+                <a
+                  href="https://www.npci.org.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[#64748B] hover:text-[#16A34A] transition-colors"
                 >
-                  <span>NPCI Guidelines</span>
-                  <ExternalLink className="w-3 h-3 text-[#8291A6]" />
+                  <span>npci.org.in (NPCI)</span>
+                  <ExternalLink className="w-3 h-3" />
                 </a>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="pt-6 border-t border-[#26364D] flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-[#8291A6]">
+        <div className="pt-5 border-t border-[#E2E8F0] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#64748B]">
           <p>
-            &copy; {new Date().getFullYear()} UPI Scam Analyzer. Built for digital payment fraud defense.
+            &copy; {new Date().getFullYear()} UPI Scam Analyzer. Independent rule-based fraud awareness utility.
           </p>
-          <div className="flex items-center gap-4">
-            <Link to="/privacy" className="hover:text-[#F1F5F9]">Privacy</Link>
-            <span>&bull;</span>
-            <Link to="/terms" className="hover:text-[#F1F5F9]">Terms</Link>
-            <span>&bull;</span>
-            <span className="flex items-center gap-1 text-[#A8B5C7]">
-              <Lock className="w-3 h-3 text-[#16A34A]" />
-              <span>In-Memory Heuristic Inspection</span>
+          <div className="flex flex-wrap items-center gap-4">
+            <Link to="/privacy" className="hover:text-[#172B4D]">Privacy Policy</Link>
+            <span className="text-[#CBD5E1]">&bull;</span>
+            <Link to="/terms" className="hover:text-[#172B4D]">Terms and Conditions</Link>
+            <span className="text-[#CBD5E1]">&bull;</span>
+            <span className="flex items-center gap-1.5 text-[#172B4D] font-medium">
+              <Lock className="w-3.5 h-3.5 text-[#16A34A]" />
+              <span>Local Rule-Based Inspection</span>
             </span>
           </div>
         </div>

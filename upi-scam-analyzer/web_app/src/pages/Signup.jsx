@@ -44,42 +44,42 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-between p-4 sm:p-6 bg-[#0B1220] text-[#F1F5F9] font-sans">
+    <div className="min-h-screen flex flex-col justify-between p-5 sm:p-8 bg-[#F5F7FA] text-[#172B4D] font-sans">
       <div className="flex-1 flex items-center justify-center">
-        <div className="w-full max-w-sm my-4">
+        <div className="w-full max-w-md my-4">
           {/* Logo & Header */}
           <div className="text-center mb-6">
-            <Link to="/" className="inline-flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 rounded bg-[#3B82F6] text-white flex items-center justify-center">
-                <Shield className="w-4 h-4" />
+            <Link to="/" className="inline-flex items-center gap-2.5 mb-1.5">
+              <div className="w-9 h-9 rounded-lg accent-blue-gradient text-white flex items-center justify-center">
+                <Shield className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-[#F1F5F9]">Scam Shield</span>
+              <span className="text-2xl font-bold tracking-tight text-[#14243A]">Scam Shield</span>
             </Link>
-            <p className="text-[#8291A6] text-xs">Create your fraud protection account</p>
+            <p className="text-[#64748B] text-sm">Create an account for heuristic scan tools</p>
           </div>
 
           {/* Signup Card */}
-          <div className="bg-[#111C2E] border border-[#26364D] rounded-lg p-5 sm:p-6">
-            <div className="mb-5 border-b border-[#26364D] pb-3">
-              <h2 className="text-base font-semibold text-[#F1F5F9]">Create Account</h2>
-              <p className="text-[#8291A6] text-xs mt-0.5">Verification code will be dispatched to your email.</p>
+          <div className="card-enterprise p-6 sm:p-8">
+            <div className="mb-6 border-b border-[#E2E8F0] pb-4">
+              <h2 className="text-lg font-bold text-[#0F172A]">Create Account</h2>
+              <p className="text-[#64748B] text-sm mt-1">A 6-digit verification code will be sent to your email.</p>
             </div>
 
             {error && (
-              <div className="mb-4 bg-[#080F1D] border border-[#DC2626]/50 p-3 rounded flex items-start gap-2.5 text-xs text-[#DC2626]">
-                <AlertCircle className="w-4 h-4 text-[#DC2626] flex-shrink-0 mt-0.5" />
+              <div className="mb-5 bg-[#FEF2F2] border border-[#FECACA] p-3.5 rounded-lg flex items-start gap-2.5 text-sm text-[#B91C1C]">
+                <AlertCircle className="w-5 h-5 text-[#DC2626] flex-shrink-0 mt-0.5" />
                 <div className="leading-relaxed">
-                  <strong className="block text-[#DC2626] font-semibold">Registration Error</strong>
+                  <strong className="block text-[#B91C1C] font-semibold">Registration Error</strong>
                   {error}
                 </div>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-3.5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label 
+                <label
                   htmlFor="signup-name"
-                  className="block text-xs font-medium text-[#A8B5C7] mb-1"
+                  className="block text-sm font-semibold text-[#0F172A] mb-1.5"
                 >
                   Full Name
                 </label>
@@ -90,14 +90,14 @@ export default function Signup() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="w-full px-3 py-2 bg-[#080F1D] border border-[#26364D] rounded-md text-xs sm:text-sm text-[#F1F5F9] placeholder-[#8291A6] focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
+                  className="w-full h-11 px-3.5 bg-white border border-[#CBD5E1] rounded-lg text-[15px] text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20"
                 />
               </div>
 
               <div>
-                <label 
+                <label
                   htmlFor="signup-email"
-                  className="block text-xs font-medium text-[#A8B5C7] mb-1"
+                  className="block text-sm font-semibold text-[#0F172A] mb-1.5"
                 >
                   Email Address
                 </label>
@@ -108,14 +108,14 @@ export default function Signup() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-3 py-2 bg-[#080F1D] border border-[#26364D] rounded-md text-xs sm:text-sm text-[#F1F5F9] placeholder-[#8291A6] focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
+                  className="w-full h-11 px-3.5 bg-white border border-[#CBD5E1] rounded-lg text-[15px] text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20"
                 />
               </div>
 
               <div>
-                <label 
+                <label
                   htmlFor="signup-password"
-                  className="block text-xs font-medium text-[#A8B5C7] mb-1"
+                  className="block text-sm font-semibold text-[#0F172A] mb-1.5"
                 >
                   Password (Min. 6 characters)
                 </label>
@@ -126,14 +126,14 @@ export default function Signup() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-3 py-2 bg-[#080F1D] border border-[#26364D] rounded-md text-xs sm:text-sm text-[#F1F5F9] placeholder-[#8291A6] focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
+                  className="w-full h-11 px-3.5 bg-white border border-[#CBD5E1] rounded-lg text-[15px] text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20"
                 />
               </div>
 
               <div>
-                <label 
+                <label
                   htmlFor="signup-confirm-password"
-                  className="block text-xs font-medium text-[#A8B5C7] mb-1"
+                  className="block text-sm font-semibold text-[#0F172A] mb-1.5"
                 >
                   Confirm Password
                 </label>
@@ -144,32 +144,32 @@ export default function Signup() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className="w-full px-3 py-2 bg-[#080F1D] border border-[#26364D] rounded-md text-xs sm:text-sm text-[#F1F5F9] placeholder-[#8291A6] focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]"
+                  className="w-full h-11 px-3.5 bg-white border border-[#CBD5E1] rounded-lg text-[15px] text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20"
                 />
               </div>
 
-              <div className="pt-1">
-                <p className="text-[11px] text-[#8291A6] leading-relaxed mb-3">
+              <div className="pt-2">
+                <p className="text-xs text-[#64748B] leading-relaxed mb-3.5">
                   By registering, you agree to our{' '}
-                  <Link to="/terms" className="text-[#3B82F6] hover:underline">Terms of Service</Link>{' '}
+                  <Link to="/terms" className="text-[#2563EB] font-medium hover:underline">Terms and Conditions</Link>{' '}
                   and{' '}
-                  <Link to="/privacy" className="text-[#3B82F6] hover:underline">Privacy Policy</Link>.
+                  <Link to="/privacy" className="text-[#2563EB] font-medium hover:underline">Privacy Policy</Link>.
                 </p>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full btn-primary h-[38px]"
+                  className="w-full btn-primary h-11 text-[15px]"
                 >
                   <span>{loading ? 'Sending Code...' : 'Proceed to Email Verification'}</span>
-                  {!loading && <ArrowRight className="w-3.5 h-3.5" />}
+                  {!loading && <ArrowRight className="w-4 h-4" />}
                 </button>
               </div>
             </form>
 
-            <div className="mt-5 pt-4 border-t border-[#26364D] text-center">
-              <p className="text-xs text-[#A8B5C7]">
+            <div className="mt-6 pt-4 border-t border-[#E2E8F0] text-center">
+              <p className="text-sm text-[#475569]">
                 Already registered?{' '}
-                <Link to="/login" className="text-[#3B82F6] font-medium hover:underline">
+                <Link to="/login" className="text-[#2563EB] font-semibold hover:underline">
                   Sign In
                 </Link>
               </p>
@@ -179,12 +179,12 @@ export default function Signup() {
       </div>
 
       {/* Legal Footer */}
-      <footer className="text-center py-3 text-xs text-[#8291A6] space-x-3">
-        <Link to="/privacy" className="hover:text-[#F1F5F9]">Privacy Policy</Link>
+      <footer className="text-center py-3 text-xs text-[#64748B] space-x-3">
+        <Link to="/privacy" className="hover:text-[#0F172A]">Privacy Policy</Link>
         <span>&bull;</span>
-        <Link to="/terms" className="hover:text-[#F1F5F9]">Terms of Service</Link>
+        <Link to="/terms" className="hover:text-[#0F172A]">Terms and Conditions</Link>
         <span>&bull;</span>
-        <Link to="/" className="hover:text-[#F1F5F9]">Home</Link>
+        <Link to="/" className="hover:text-[#0F172A]">Home</Link>
       </footer>
     </div>
   );

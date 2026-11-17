@@ -11,6 +11,7 @@ import OcrQrScanner from './pages/OcrQrScanner';
 import MessageAnalyzer from './pages/MessageAnalyzer';
 import UpiAnalyzer from './pages/UpiAnalyzer';
 import UrlAnalyzer from './pages/UrlAnalyzer';
+import PhoneAnalyzer from './pages/PhoneAnalyzer';
 import History from './pages/History';
 import Result from './pages/Result';
 import Admin from './pages/Admin';
@@ -21,8 +22,8 @@ import Terms from './pages/Terms';
 function RequireAuth({ user, children }) {
   if (user === undefined) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0B1220]">
-        <p className="text-xs font-mono font-semibold text-[#8291A6]">Verifying security session...</p>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <p className="text-sm font-mono font-medium text-[#475569]">Verifying security session...</p>
       </div>
     );
   }
@@ -131,6 +132,14 @@ export default function App() {
           element={
             <RequireAuth user={user}>
               <UrlAnalyzer />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/phone"
+          element={
+            <RequireAuth user={user}>
+              <PhoneAnalyzer />
             </RequireAuth>
           }
         />

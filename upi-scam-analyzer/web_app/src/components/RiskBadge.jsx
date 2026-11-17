@@ -1,32 +1,31 @@
 import { CheckCircle2, AlertTriangle, ShieldAlert } from './Icons';
 
-export default function RiskBadge({ level, score }) {
-  const isHigh = level === 'high' || level === 'danger';
-  const isMed = level === 'medium' || level === 'warning';
+export default function RiskBadge({ level, score, maxScore = 25 }) {
+  const isDangerous = level === 'high' || level === 'danger' || level === 'dangerous' || score >= 12;
+  const isWarning = !isDangerous && (level === 'medium' || level === 'warning' || score >= 5);
 
-  if (isHigh) {
+  if (isDangerous) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#DC2626]/10 text-[#DC2626] border border-[#DC2626]/30 text-xs font-bold uppercase tracking-wider font-mono">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA] text-xs font-semibold uppercase tracking-wider font-mono">
         <ShieldAlert className="w-3.5 h-3.5 text-[#DC2626]" />
-        <span>HIGH RISK &bull; {score}/100</span>
+        <span>Dangerous &bull; {score}/{maxScore}</span>
       </span>
     );
   }
 
-  if (isMed) {
+  if (isWarning) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#D97706]/10 text-[#D97706] border border-[#D97706]/30 text-xs font-bold uppercase tracking-wider font-mono">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#FFFBEB] text-[#B45309] border border-[#FDE68A] text-xs font-semibold uppercase tracking-wider font-mono">
         <AlertTriangle className="w-3.5 h-3.5 text-[#D97706]" />
-        <span>MEDIUM RISK &bull; {score}/100</span>
+        <span>Warning &bull; {score}/{maxScore}</span>
       </span>
     );
   }
 
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#16A34A]/10 text-[#16A34A] border border-[#16A34A]/30 text-xs font-bold uppercase tracking-wider font-mono">
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0] text-xs font-semibold uppercase tracking-wider font-mono">
       <CheckCircle2 className="w-3.5 h-3.5 text-[#16A34A]" />
-      <span>LOW RISK &bull; {score}/100</span>
+      <span>Safe &bull; {score}/{maxScore}</span>
     </span>
   );
 }
-
