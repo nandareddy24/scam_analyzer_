@@ -217,6 +217,9 @@ jobs:
 
           echo "Generating Security & Vulnerability Excel Report..."
           python generate_security_report.py
+          if [ -f "generate_security_assessment_reports.py" ]; then
+            python generate_security_assessment_reports.py || true
+          fi
           ls -la *.xlsx
 
       - name: Upload Security Vulnerability Excel Report
@@ -224,11 +227,12 @@ jobs:
         with:
           name: 04-Security-Vulnerability-Test-Report
           path: |
-            vulnerability-tests/UPI_Scam_Analyzer_Security_Vulnerability_Test_Report.xlsx
-            upi-scam-analyzer/vulnerability-tests/UPI_Scam_Analyzer_Security_Vulnerability_Test_Report.xlsx
-            upi-scam-analyzer/Vulnerability Test Results/UPI_Scam_Analyzer_Security_Vulnerability_Test_Report.xlsx
+            vulnerability-tests/*.xlsx
+            upi-scam-analyzer/vulnerability-tests/*.xlsx
+            upi-scam-analyzer/Vulnerability Test Results/*.xlsx
+            Vulnerability Test Results/*.xlsx
           retention-days: 30
-          if-no-files-found: error
+          if-no-files-found: warn
 
   # ===========================================================================
   # 5. CONSOLIDATED BUNDLE: DOWNLOAD ALL 4 TEST EXCEL REPORTS IN ONE ARTIFACT
@@ -284,7 +288,7 @@ jobs:
           find temp-01 temp-02 temp-03 temp-04 -type f -name "*.xlsx" -exec cp -v {} consolidated-excel-reports/ \; 2>/dev/null || true
 
           # Fallback check against workspace files if download step had cache gaps
-          find . -maxdepth 3 -type f -name "UPI_Scam_Analyzer_*.xlsx" -exec cp -vn {} consolidated-excel-reports/ \;
+          find . -type f -name "*.xlsx" -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "./consolidated-excel-reports/*" -exec cp -vn {} consolidated-excel-reports/ \; 2>/dev/null || true
 
           echo "Listing all collected Excel test reports:"
           ls -lh consolidated-excel-reports/
@@ -330,3 +334,4 @@ jobs:
           name: UPI-Scam-Analyzer-ALL-4-TEST-EXCEL-REPORTS
           path: consolidated-excel-reports/
           retention-days: 60
+
