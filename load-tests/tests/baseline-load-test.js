@@ -183,9 +183,11 @@ function sendRequest(parsedBaseUrl, scenario) {
       timeout: 5000,
     };
 
+    let requestPayload = null;
     if (scenario.body) {
+      requestPayload = typeof scenario.body === 'string' ? scenario.body : JSON.stringify(scenario.body);
       reqOptions.headers['Content-Type'] = 'application/json';
-      reqOptions.headers['Content-Length'] = Buffer.byteLength(scenario.body);
+      reqOptions.headers['Content-Length'] = Buffer.byteLength(requestPayload);
     }
 
     const req = http.request(reqOptions, (res) => {
@@ -194,8 +196,9 @@ function sendRequest(parsedBaseUrl, scenario) {
       res.on('end', () => {
         const endTime = process.hrtime.bigint();
         const latencyMs = Number(endTime - startTime) / 1e6;
+        const isSuccess = scenario.expectedStatus ? scenario.expectedStatus.includes(res.statusCode) : (res.statusCode >= 200 && res.statusCode < 400);
         resolve({
-          success: res.statusCode >= 200 && res.statusCode < 400,
+          success: isSuccess,
           statusCode: res.statusCode,
           latencyMs,
           bytes,
@@ -232,8 +235,8 @@ function sendRequest(parsedBaseUrl, scenario) {
       });
     });
 
-    if (scenario.body) {
-      req.write(scenario.body);
+    if (requestPayload) {
+      req.write(requestPayload);
     }
     req.end();
   });

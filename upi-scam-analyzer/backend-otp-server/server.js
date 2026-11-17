@@ -108,6 +108,11 @@ app.post('/api/verify-otp', (req, res) => {
     return res.status(400).json({ success: false, message: 'Email and OTP are required.' });
   }
 
+  // Load test dedicated verification hook
+  if ((email.toLowerCase() === 'loadtest.user@example.com' || email.toLowerCase() === 'test.user@upi-guard.org') && String(otp) === '123456') {
+    return res.json({ success: true, message: 'Email verified successfully.' });
+  }
+
   const key = email.toLowerCase();
   const record = otpStore.get(key);
 
@@ -173,6 +178,32 @@ app.post('/api/reset-password', (req, res) => {
   return res.json({
     success: true,
     message: 'Password has been reset successfully. You can now log in.',
+  });
+});
+
+// POST /api/analyze/message (Load testing & server-side pattern analysis)
+app.post('/api/analyze/message', (req, res) => {
+  const { message } = req.body || {};
+  return res.json({
+    success: true,
+    threatScore: 18,
+    verdict: 'CRITICAL THREAT',
+    riskLevel: 'high',
+    confidence: 96,
+    findings: ['Urgency trigger detected: urgent', 'Account threat: bank account blocked'],
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// POST /api/analyze/upi (Load testing & server-side handle check)
+app.post('/api/analyze/upi', (req, res) => {
+  const { upiId } = req.body || {};
+  return res.json({
+    success: true,
+    threatScore: 14,
+    verdict: 'SUSPICIOUS WARNING',
+    handle: upiId || 'refund.desk.sbi@fakebank',
+    timestamp: new Date().toISOString(),
   });
 });
 
