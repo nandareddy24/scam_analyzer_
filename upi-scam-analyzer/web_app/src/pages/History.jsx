@@ -11,57 +11,59 @@ export default function History() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-4xl">
-        <div className="border-b border-slate-200 pb-4">
-          <div className="flex items-center gap-2.5 mb-1">
-            <div className="w-8 h-8 rounded-md bg-slate-100 text-slate-800 flex items-center justify-center">
-              <Clock className="w-4 h-4" />
+      <div className="space-y-6 max-w-4xl mx-auto">
+        <div className="border-b border-slate-800 pb-4">
+          <div className="flex items-center gap-3 mb-1.5">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center">
+              <Clock className="w-5 h-5" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Personal Scan Audit History</h1>
+            <div>
+              <h1 className="text-2xl font-black text-slate-100 tracking-tight">Personal Scan Audit History</h1>
+              <p className="text-xs text-slate-400">
+                Review past inspections, threat scores, and flagged payloads across your account session.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-slate-500">
-            Review past inspections, threat scores, and flagged payloads across your account session.
-          </p>
         </div>
 
-        <div className="bg-white rounded-lg border border-slate-200 shadow-sm divide-y divide-slate-100">
+        <div className="bg-slate-900/90 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-2xl divide-y divide-slate-800/80 overflow-hidden">
           {mockScans.map((item, idx) => (
             <div
               key={idx}
-              className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors gap-3"
+              className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-slate-800/40 transition-colors gap-3"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3.5">
                 <div
-                  className={`w-9 h-9 rounded-md flex items-center justify-center font-bold text-xs ${
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs font-mono border ${
                     item.badge === 'danger'
-                      ? 'bg-red-50 text-red-700 border border-red-200'
+                      ? 'bg-red-500/10 text-red-400 border-red-500/30'
                       : item.badge === 'warning'
-                      ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                      : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                      : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                   }`}
                 >
                   {item.type}
                 </div>
 
                 <div>
-                  <h4 className="font-semibold text-slate-900 text-xs font-mono">{item.target}</h4>
-                  <p className="text-[11px] text-slate-500 mt-0.5">{item.result} &bull; {item.date}</p>
+                  <h4 className="font-semibold text-slate-200 text-xs sm:text-sm font-mono">{item.target}</h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5">{item.result} &bull; {item.date}</p>
                 </div>
               </div>
 
-              <div className="text-right">
+              <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2">
                 <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
+                  className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${
                     item.badge === 'danger'
-                      ? 'bg-red-100 text-red-800'
+                      ? 'bg-red-500/10 text-red-400 border-red-500/30'
                       : item.badge === 'warning'
-                      ? 'bg-amber-100 text-amber-800'
-                      : 'bg-emerald-100 text-emerald-800'
+                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                      : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                   }`}
                 >
                   {item.badge}
                 </span>
-                <div className="text-xs font-semibold text-slate-600 mt-1 font-mono">
+                <div className="text-xs font-mono font-bold text-slate-400">
                   Score: {item.score}
                 </div>
               </div>

@@ -1,112 +1,128 @@
 import { useState } from 'react';
 import AppLayout from '../components/AppLayout';
+import ScanningLoader from '../components/ScanningLoader';
+import ResultsDashboard from '../components/ResultsDashboard';
 import { analyzeUrl } from '../services/analyzer';
-import { LinkIcon, Search, ShieldAlert, ShieldCheck, AlertTriangle, CheckCircle2 } from '../components/Icons';
+import { LinkIcon, Search, Globe, Zap } from '../components/Icons';
 
 export default function UrlAnalyzer() {
   const [url, setUrl] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
   const [result, setResult] = useState(null);
 
+  const presets = [
+    { label: 'Phishing IP Bank Link', val: 'http://192.168.1.10/verify-bank-account' },
+    { label: 'Obfuscated Shortener', val: 'http://bit.ly/claim-sbi-reward-points' },
+    { label: 'Verified Portal (NPCI)', val: 'https://npci.org.in' },
+  ];
+
   function handleCheck(e) {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!url.trim()) return;
+    setIsScanning(true);
+    setResult(null);
+  }
+
+  function handleScanComplete() {
     setResult(analyzeUrl(url));
+    setIsScanning(false);
   }
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-3xl">
-        <div className="border-b border-slate-200 pb-4">
-          <div className="flex items-center gap-2.5 mb-1">
-            <div className="w-8 h-8 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-center">
-              <LinkIcon className="w-4 h-4" />
+      <div className="space-y-6 max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="border-b border-slate-800 pb-4">
+          <div className="flex items-center gap-3 mb-1.5">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center">
+              <Globe className="w-5 h-5" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Phishing Link & URL Scanner</h1>
+            <div>
+              <h1 className="text-2xl font-black text-slate-100 tracking-tight">
+                Phishing URL & Domain Scanner
+              </h1>
+              <p className="text-xs text-slate-400">
+                Inspect raw IP addresses, deceptive banking subdomains, shortened redirects, and typo-squatted domains.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-slate-500">
-            Detect deceptive banking subdomains, raw IP destinations, link shorteners, and credential phishing pages.
-          </p>
         </div>
 
-        <div className="bg-white p-6 sm:p-8 rounded-lg border border-slate-200 shadow-sm">
+        {/* Input Card */}
+        <div className="bg-slate-900/90 rounded-2xl border border-slate-800 backdrop-blur-xl p-6 sm:p-8 shadow-2xl">
           <form onSubmit={handleCheck} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
+              <label className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 mb-2">
                 Target Web Link or URL
               </label>
-              <input
-                type="text"
-                placeholder="e.g. http://192.168.1.10/verify-bank-account or http://kyc-update.com"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-md text-xs font-medium focus:outline-none focus:border-emerald-700 text-slate-900"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="e.g. http://192.168.1.10/verify-bank-account or http://kyc-update.com"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-950/90 border border-slate-800 rounded-xl text-xs sm:text-sm font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                  <LinkIcon className="w-4 h-4" />
+                </div>
+              </div>
             </div>
+
+            {/* Quick Test Presets */}
+            <div>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-2 font-bold">
+                Quick Test Links:
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {presets.map((p, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setUrl(p.val);
+                      setIsScanning(true);
+                      setResult(null);
+                    }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-mono bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition-all flex items-center gap-1.5"
+                  >
+                    <Zap className="w-3 h-3 text-amber-400" />
+                    <span>{p.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <button
               type="submit"
-              className="w-full bg-[#047857] hover:bg-[#065f46] text-white font-bold py-2.5 px-4 rounded-md text-xs tracking-wide transition-colors shadow-sm inline-flex items-center justify-center gap-2"
+              disabled={isScanning || !url.trim()}
+              className="w-full py-3.5 px-6 rounded-xl font-bold text-sm tracking-wide bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2"
             >
-              <Search className="w-3.5 h-3.5" />
-              <span>Analyze Link Safety</span>
+              <Search className="w-4 h-4" />
+              <span>{isScanning ? 'Executing Security Scan...' : 'Analyze URL Safety'}</span>
             </button>
           </form>
-
-          {result && (
-            <div className={`mt-6 p-5 rounded-md border-l-4 shadow-sm ${
-              result.score >= 10 ? 'bg-red-50 border-red-600 text-red-950' :
-              result.score >= 5 ? 'bg-amber-50 border-amber-600 text-amber-950' :
-              'bg-emerald-50 border-emerald-600 text-emerald-950'
-            }`}>
-              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-black/10 pb-3 mb-4">
-                <div className="flex items-center gap-2.5">
-                  {result.score >= 10 ? (
-                    <ShieldAlert className="w-5 h-5 text-red-600 flex-shrink-0" />
-                  ) : result.score >= 5 ? (
-                    <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                  ) : (
-                    <ShieldCheck className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                  )}
-                  <div>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
-                      result.score >= 10 ? 'bg-red-100 text-red-800 border-red-200' :
-                      result.score >= 5 ? 'bg-amber-100 text-amber-800 border-amber-200' :
-                      'bg-emerald-100 text-emerald-800 border-emerald-200'
-                    }`}>
-                      {result.status}
-                    </span>
-                    <h3 className="text-base font-bold mt-1 text-slate-900">{result.result}</h3>
-                  </div>
-                </div>
-
-                <div className="text-right text-xs">
-                  <div className="text-[10px] font-semibold uppercase text-slate-500">Risk Score</div>
-                  <div className="text-sm font-bold text-slate-900">{result.score} / 25</div>
-                </div>
-              </div>
-
-              <div className="space-y-3 text-xs">
-                <div>
-                  <span className="font-bold uppercase text-[10px] tracking-wide text-slate-700 block mb-1">
-                    Detection Findings
-                  </span>
-                  <div className="bg-white/80 p-3 rounded border border-black/5 text-slate-800 leading-relaxed font-medium">
-                    {result.findings}
-                  </div>
-                </div>
-
-                <div>
-                  <span className="font-bold uppercase text-[10px] tracking-wide text-slate-700 block mb-1">
-                    Safety Guidance
-                  </span>
-                  <div className="bg-white p-3 rounded border border-black/5 text-slate-900 leading-relaxed font-semibold flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-700 flex-shrink-0 mt-0.5" />
-                    <span>{result.advice}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* Dynamic Scanning State */}
+        {isScanning && (
+          <ScanningLoader
+            onComplete={handleScanComplete}
+            targetType="URL"
+            targetValue={url}
+          />
+        )}
+
+        {/* Results Component */}
+        {result && !isScanning && (
+          <ResultsDashboard
+            result={result}
+            onReset={() => {
+              setResult(null);
+              setUrl('');
+            }}
+          />
+        )}
       </div>
     </AppLayout>
   );
