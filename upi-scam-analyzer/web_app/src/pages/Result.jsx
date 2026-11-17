@@ -16,15 +16,15 @@ export default function Result() {
   return (
     <AppLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="flex items-center justify-between border-b border-[#26364D] pb-4">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-xs font-mono font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 px-3.5 py-2 rounded-xl border border-slate-800 transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-mono font-semibold text-[#A8B5C7] hover:text-[#F1F5F9] bg-[#111C2E] hover:bg-[#16243B] px-3.5 py-2 rounded-md border border-[#26364D] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Previous Screen</span>
           </button>
-          <span className="text-xs font-mono text-slate-500 uppercase">
+          <span className="text-xs font-mono text-[#8291A6] uppercase">
             Forensic Verdict
           </span>
         </div>

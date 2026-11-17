@@ -1,12 +1,10 @@
-import { Lock, Globe, AlertTriangle, LinkIcon, CheckCircle2 } from './Icons';
+import { Lock, Globe, AlertTriangle, LinkIcon } from './Icons';
 
 /**
  * ThreatIndicators Component
- * Modular diagnostic table / cards for key forensic parameters:
- * 1. Protocol & Encryption
- * 2. Identity & Authority
- * 3. Matched Threat Signatures
- * 4. Routing & Obfuscation
+ * Displays 4 structured technical forensic checks.
+ * Uses design system tokens:
+ * Background: #111C2E, Border: #26364D, Primary: #F1F5F9, Secondary: #A8B5C7, Muted: #8291A6.
  */
 export default function ThreatIndicators({ indicators = {}, type = 'url' }) {
   const isUrl = type === 'url';
@@ -15,50 +13,50 @@ export default function ThreatIndicators({ indicators = {}, type = 'url' }) {
   const isUpi = type === 'upi';
 
   const card1 = {
-    title: isPhone ? 'Network Routing' : isMessage ? 'Channel Encryption' : isUpi ? 'Payment Protocol' : 'SSL / TLS Encryption',
-    value: indicators.sslStatus || (isUrl ? 'Active (HTTPS)' : 'Standard Transport'),
+    title: isPhone ? 'Network Routing' : isMessage ? 'Channel Encryption' : isUpi ? 'Payment Rail' : 'SSL / TLS Protocol',
+    value: indicators.sslStatus || (isUrl ? 'Active (HTTPS)' : 'Standard Rail'),
     status: indicators.sslState || 'safe',
     icon: <Lock className="w-3.5 h-3.5" />,
     desc: isUrl
-      ? (indicators.sslState === 'danger' ? 'Missing encryption. Data submitted unencrypted.' : 'HTTPS encryption actively verified.')
+      ? (indicators.sslState === 'danger' ? 'Missing encryption. Traffic submitted in plaintext.' : 'HTTPS encryption actively verified.')
       : isUpi
-      ? 'NPCI payment rail protocol standard.'
-      : 'Transport channel verified.',
+      ? 'Verified NPCI payment rail standard.'
+      : 'Transport protocol verified.',
   };
 
   const card2 = {
-    title: isPhone ? 'Caller Origin' : isMessage ? 'Urgency Analysis' : isUpi ? 'PSP Bank Handle' : 'Domain Reputation',
-    value: indicators.domainAge || (isUrl ? 'Recognized Host' : 'Standard Identifier'),
+    title: isPhone ? 'Telecom Prefix' : isMessage ? 'Urgency Analysis' : isUpi ? 'PSP Bank Routing' : 'Domain Reputation',
+    value: indicators.domainAge || (isUrl ? 'Recognized Host' : 'Standard Format'),
     status: indicators.domainState || 'safe',
     icon: <Globe className="w-3.5 h-3.5" />,
     desc: isUrl
-      ? (indicators.domainState === 'danger' ? 'IP-based host or suspicious new domain.' : 'Standard domain with established history.')
+      ? (indicators.domainState === 'danger' ? 'Raw IP address or typo-squatting pattern.' : 'Established domain with recognized history.')
       : isPhone
-      ? 'Telecom prefix and caller ID inspection.'
+      ? 'Telecommunication carrier prefix check.'
       : isUpi
-      ? 'Bank PSP network handle syntax verification.'
-      : 'Evaluated against psychological pressure keywords.',
+      ? 'Bank PSP handle syntax check.'
+      : 'Evaluated against urgency keywords.',
   };
 
   const card3 = {
     title: 'Threat Signatures',
-    value: indicators.threatSignatures || '0 Flagged Signatures',
+    value: indicators.threatSignatures || '0 Flagged Patterns',
     status: indicators.signatureState || 'safe',
     icon: <AlertTriangle className="w-3.5 h-3.5" />,
     desc: indicators.signatureState === 'danger'
-      ? 'Matches known scam or impersonation syntax.'
+      ? 'Matched known scam or impersonation syntax.'
       : indicators.signatureState === 'warning'
       ? 'Unusual behavioral patterns detected.'
       : 'No known malicious patterns found.',
   };
 
   const card4 = {
-    title: isPhone ? 'Impersonation Risk' : isMessage ? 'Link Analysis' : isUpi ? 'Beneficiary Type' : 'Redirection Risk',
+    title: isPhone ? 'Caller Identity' : isMessage ? 'Link Analysis' : isUpi ? 'Handle Structure' : 'Redirect Chain',
     value: indicators.redirectObfuscation || 'Direct Routing',
     status: indicators.redirectState || 'safe',
     icon: <LinkIcon className="w-3.5 h-3.5" />,
     desc: indicators.redirectState === 'danger'
-      ? 'Spoofed target or masked link detected.'
+      ? 'Masked destination or spoofed identity.'
       : indicators.redirectState === 'warning'
       ? 'URL shortener or redirect hop detected.'
       : 'Transparent direct destination.',
@@ -69,18 +67,18 @@ export default function ThreatIndicators({ indicators = {}, type = 'url' }) {
   function getBadge(status) {
     if (status === 'danger') {
       return {
-        badge: 'bg-red-950/60 text-red-300 border-red-800',
+        badge: 'bg-[#DC2626]/20 text-[#DC2626] border border-[#DC2626]/40',
         text: 'FLAGGED',
       };
     }
     if (status === 'warning') {
       return {
-        badge: 'bg-amber-950/60 text-amber-300 border-amber-800',
+        badge: 'bg-[#D97706]/20 text-[#D97706] border border-[#D97706]/40',
         text: 'CAUTION',
       };
     }
     return {
-      badge: 'bg-emerald-950/60 text-emerald-300 border-emerald-800',
+      badge: 'bg-[#16A34A]/20 text-[#16A34A] border border-[#16A34A]/40',
       text: 'PASS',
     };
   }
@@ -92,25 +90,25 @@ export default function ThreatIndicators({ indicators = {}, type = 'url' }) {
         return (
           <div
             key={i}
-            className="p-3.5 rounded-lg bg-slate-900 border border-slate-800 flex flex-col justify-between"
+            className="p-3.5 rounded-lg bg-[#111C2E] border border-[#26364D] flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-slate-400">
+                <span className="text-[#8291A6]">
                   {c.icon}
                 </span>
-                <span className={`text-[10px] font-mono font-semibold uppercase px-2 py-0.5 rounded border ${b.badge}`}>
+                <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded ${b.badge}`}>
                   {b.text}
                 </span>
               </div>
-              <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              <div className="text-[11px] font-semibold text-[#8291A6] uppercase tracking-wide">
                 {c.title}
               </div>
-              <div className="text-xs font-semibold text-slate-100 mt-1 truncate" title={c.value}>
+              <div className="text-xs font-mono font-medium text-[#F1F5F9] mt-0.5 truncate" title={c.value}>
                 {c.value}
               </div>
             </div>
-            <p className="text-[11px] text-slate-400 mt-2 border-t border-slate-800/80 pt-2 leading-relaxed">
+            <p className="text-[11px] text-[#A8B5C7] mt-2 border-t border-[#26364D] pt-2 leading-relaxed">
               {c.desc}
             </p>
           </div>

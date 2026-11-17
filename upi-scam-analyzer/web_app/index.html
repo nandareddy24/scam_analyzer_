@@ -9,7 +9,7 @@
     <meta name="description" content="Verify suspicious UPI IDs, phishing URLs, fraudulent SMS messages, and QR codes before sending money. Built with NPCI safety advisories and National Cyber Crime 1930 integration." />
     <meta name="keywords" content="UPI fraud detection, scam analyzer, phishing checker, cyber crime helpline 1930, VPA lookup, financial security" />
     <meta name="author" content="UPI Scam Analyzer Team" />
-    <meta name="theme-color" content="#0f172a" />
+    <meta name="theme-color" content="#0B1220" />
 
     <!-- Open Graph -->
     <meta property="og:title" content="UPI Scam Analyzer | Financial Fraud & Threat Detection" />
@@ -22,40 +22,42 @@
     <link rel="alternate icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
 
-    <!-- Fonts -->
+    <!-- Fonts: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         darkMode: 'class',
         theme: {
           extend: {
+            colors: {
+              main: '#0B1220',
+              sidebar: '#0F172A',
+              card: '#111C2E',
+              cardHover: '#16243b',
+              input: '#080F1D',
+              border: '#26364D',
+              primary: '#F1F5F9',
+              secondary: '#A8B5C7',
+              muted: '#8291A6',
+              action: '#3B82F6',
+              actionHover: '#2563EB',
+              success: '#16A34A',
+              warning: '#D97706',
+              danger: '#DC2626',
+            },
             fontFamily: {
-              sans: ['Plus Jakarta Sans', 'sans-serif'],
-              mono: ['JetBrains Mono', 'monospace'],
-            },
-            animation: {
-              fadeIn: 'fadeIn 0.4s ease-out forwards',
-              pulseGlow: 'pulseGlow 2s infinite',
-            },
-            keyframes: {
-              fadeIn: {
-                '0%': { opacity: '0', transform: 'translateY(6px)' },
-                '100%': { opacity: '1', transform: 'translateY(0)' },
-              },
-              pulseGlow: {
-                '0%, 100%': { opacity: '0.6' },
-                '50%': { opacity: '1' },
-              }
+              sans: ['Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif],
+              mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
             }
           }
         }
       }
     </script>
   </head>
-  <body class="bg-slate-950 text-slate-100 antialiased font-['Plus_Jakarta_Sans',sans-serif] selection:bg-blue-600/30 selection:text-blue-200 min-h-screen">
+  <body class="bg-[#0B1220] text-[#F1F5F9] antialiased font-sans min-h-screen selection:bg-[#3B82F6]/30 selection:text-[#F1F5F9]">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

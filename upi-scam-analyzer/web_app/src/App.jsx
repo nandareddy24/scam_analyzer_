@@ -21,8 +21,8 @@ import Terms from './pages/Terms';
 function RequireAuth({ user, children }) {
   if (user === undefined) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <p className="text-xs font-mono font-semibold text-slate-400">Verifying security session...</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#0B1220]">
+        <p className="text-xs font-mono font-semibold text-[#8291A6]">Verifying security session...</p>
       </div>
     );
   }

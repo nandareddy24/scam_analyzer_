@@ -14,7 +14,6 @@ export default function History() {
       if (saved) {
         setHistory(JSON.parse(saved));
       } else {
-        // Baseline initial entry
         setHistory([
           {
             id: 'init-1',
@@ -43,15 +42,15 @@ export default function History() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-4xl mx-auto">
-        <div className="border-b border-slate-800 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600/10 border border-blue-500/30 text-blue-400 flex items-center justify-center">
-              <Clock className="w-5 h-5" />
+      <div className="space-y-5 max-w-4xl mx-auto">
+        <div className="border-b border-[#26364D] pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded bg-[#111C2E] border border-[#26364D] text-[#3B82F6] flex items-center justify-center">
+              <Clock className="w-4 h-4" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-slate-100 tracking-tight">Personal Scan Audit History</h1>
-              <p className="text-xs text-slate-400">
+              <h1 className="text-xl font-semibold text-[#F1F5F9] tracking-tight">Personal Scan Audit History</h1>
+              <p className="text-xs text-[#A8B5C7]">
                 Review past inspections, threat scores, and flagged payloads across your account session.
               </p>
             </div>
@@ -60,7 +59,7 @@ export default function History() {
           {history.length > 0 && (
             <button
               onClick={handleClearHistory}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-slate-400 hover:text-red-400 bg-slate-900 border border-slate-800 hover:border-red-500/30 transition-colors self-start sm:self-auto"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs text-[#8291A6] hover:text-[#DC2626] bg-[#080F1D] border border-[#26364D] transition-colors self-start sm:self-auto"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>Clear Audit Log</span>
@@ -68,7 +67,7 @@ export default function History() {
           )}
         </div>
 
-        <div className="bg-slate-900/90 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-2xl divide-y divide-slate-800/80 overflow-hidden">
+        <div className="bg-[#111C2E] rounded-lg border border-[#26364D] divide-y divide-[#26364D] overflow-hidden">
           {history.length > 0 ? (
             history.map((item, idx) => {
               const isHigh = item.riskLevel === 'high' || item.score >= 12;
@@ -76,26 +75,26 @@ export default function History() {
               return (
                 <div
                   key={item.id || idx}
-                  className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-slate-800/40 transition-colors gap-3"
+                  className="p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-[#080F1D]/40 transition-colors gap-3"
                 >
-                  <div className="flex items-center gap-3.5">
+                  <div className="flex items-center gap-3">
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs font-mono border ${
+                      className={`w-9 h-9 rounded flex items-center justify-center text-xs font-mono font-semibold border ${
                         isHigh
-                          ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                          ? 'bg-[#DC2626]/10 text-[#DC2626] border-[#DC2626]/30'
                           : isMed
-                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                          : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                          ? 'bg-[#D97706]/10 text-[#D97706] border-[#D97706]/30'
+                          : 'bg-[#16A34A]/10 text-[#16A34A] border-[#16A34A]/30'
                       }`}
                     >
                       {item.type}
                     </div>
 
                     <div>
-                      <h4 className="font-semibold text-slate-200 text-xs sm:text-sm font-mono truncate max-w-sm sm:max-w-md">
+                      <h4 className="font-medium text-[#F1F5F9] text-xs sm:text-sm font-mono truncate max-w-sm sm:max-w-md">
                         {item.target}
                       </h4>
-                      <p className="text-[11px] text-slate-400 mt-0.5">
+                      <p className="text-[11px] text-[#8291A6] mt-0.5">
                         {item.verdict} &bull; {item.timestamp}
                       </p>
                     </div>
@@ -103,17 +102,17 @@ export default function History() {
 
                   <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2">
                     <span
-                      className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${
+                      className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
                         isHigh
-                          ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                          ? 'bg-[#DC2626]/20 text-[#DC2626] border-[#DC2626]/40'
                           : isMed
-                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                          : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                          ? 'bg-[#D97706]/20 text-[#D97706] border-[#D97706]/40'
+                          : 'bg-[#16A34A]/20 text-[#16A34A] border-[#16A34A]/40'
                       }`}
                     >
                       {isHigh ? 'HIGH RISK' : isMed ? 'SUSPICIOUS' : 'SAFE'}
                     </span>
-                    <div className="text-xs font-mono font-bold text-slate-400">
+                    <div className="text-xs font-mono text-[#8291A6]">
                       Score: {item.score}/25
                     </div>
                   </div>
@@ -122,14 +121,14 @@ export default function History() {
             })
           ) : (
             <div className="p-8 text-center space-y-3">
-              <p className="text-xs text-slate-400 font-mono">
-                No past scans recorded in this session. Run an inspection on the Defense Console to log records.
+              <p className="text-xs text-[#8291A6]">
+                No past scans recorded in this session. Run an inspection on the Analyzer Console to log records.
               </p>
               <Link
                 to="/"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-mono font-bold bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+                className="btn-primary"
               >
-                <span>Go to Defense Console</span>
+                <span>Go to Analyzer Console</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>

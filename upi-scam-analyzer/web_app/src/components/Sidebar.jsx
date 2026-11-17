@@ -11,10 +11,11 @@ import {
   Clock, 
   Lock, 
   LogOut,
-  PhoneCall
+  PhoneCall,
+  X
 } from './Icons';
 
-export default function Sidebar() {
+export default function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }) {
   const location = useLocation();
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
@@ -41,89 +42,110 @@ export default function Sidebar() {
     navItems.push({
       label: 'Security Admin',
       path: '/admin',
-      icon: <Lock className="w-4 h-4 text-amber-400" />
+      icon: <Lock className="w-4 h-4 text-[#D97706]" />
     });
   }
 
   return (
-    <aside className="w-full md:w-60 bg-slate-950 border-b md:border-b-0 md:border-r border-slate-800 p-4 flex flex-col justify-between flex-shrink-0 h-full">
-      <div>
-        {/* Brand Header */}
-        <Link to="/" className="flex items-center gap-2.5 mb-6 px-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center flex-shrink-0">
-            <Shield className="w-4 h-4" />
-          </div>
-          <div>
-            <span className="text-sm font-bold tracking-tight block text-slate-100">
-              UPI Scam Analyzer
-            </span>
-            <span className="text-[10px] text-slate-400 block -mt-0.5">
-              Fraud Detection Utility
-            </span>
-          </div>
-        </Link>
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {mobileOpen && (
+        <div 
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 z-40 bg-black/60 md:hidden transition-opacity"
+        />
+      )}
 
-        {/* Menu Navigation */}
-        <div className="space-y-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5 px-2">
-              Navigation
-            </p>
-            <nav className="space-y-0.5">
-              {navItems.map((item) => {
-                const active = path === item.path;
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`flex items-center gap-2.5 px-2.5 py-2 rounded-md text-xs transition-colors ${
-                      active
-                        ? 'bg-slate-900 text-white font-semibold border-l-2 border-blue-500'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-                    }`}
-                  >
-                    <span className={active ? 'text-blue-400' : 'text-slate-500'}>
-                      {item.icon}
-                    </span>
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
+      {/* Sidebar Content */}
+      <aside className={`
+        fixed md:static inset-y-0 left-0 z-50
+        w-64 bg-[#0F172A] border-r border-[#26364D] p-4 flex flex-col justify-between flex-shrink-0 h-full
+        transform transition-transform duration-200 ease-in-out
+        ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        <div>
+          {/* Brand Header */}
+          <div className="flex items-center justify-between mb-6 px-2">
+            <Link 
+              to="/" 
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-2.5"
+            >
+              <div className="w-7 h-7 rounded bg-[#3B82F6] text-white flex items-center justify-center flex-shrink-0">
+                <Shield className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-sm font-semibold tracking-tight block text-[#F1F5F9]">
+                  UPI Scam Analyzer
+                </span>
+                <span className="text-[10px] text-[#8291A6] block -mt-0.5">
+                  Fraud Detection System
+                </span>
+              </div>
+            </Link>
+
+            {/* Mobile Close Button */}
+            <button 
+              onClick={() => setMobileOpen(false)}
+              className="md:hidden text-[#8291A6] hover:text-[#F1F5F9] p-1"
+              aria-label="Close sidebar"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Navigation Menu */}
+          <div className="space-y-4">
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-wider text-[#8291A6] mb-1.5 px-2">
+                Navigation
+              </p>
+              <nav className="space-y-0.5">
+                {navItems.map((item) => {
+                  const active = path === item.path;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center gap-2.5 px-2.5 py-2 rounded-md text-xs transition-colors ${
+                        active
+                          ? 'bg-[#111C2E] text-[#F1F5F9] font-medium border-l-2 border-[#3B82F6]'
+                          : 'text-[#A8B5C7] hover:text-[#F1F5F9] hover:bg-[#111C2E]/60'
+                      }`}
+                    >
+                      <span className={active ? 'text-[#3B82F6]' : 'text-[#8291A6]'}>
+                        {item.icon}
+                      </span>
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="pt-4 border-t border-slate-800 space-y-3">
-        {/* Emergency Call Box */}
-        <div className="p-3 rounded-md bg-slate-900 border border-slate-800 text-[11px] space-y-1">
-          <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-            <PhoneCall className="w-3.5 h-3.5" />
-            <span>Cyber Helpline</span>
+        <div className="pt-4 border-t border-[#26364D] space-y-3">
+          {/* Legal Links */}
+          <div className="px-1 flex items-center justify-between text-[11px] text-[#8291A6]">
+            <Link to="/privacy" onClick={() => setMobileOpen(false)} className="hover:text-[#F1F5F9] transition-colors">Privacy</Link>
+            <span>&bull;</span>
+            <Link to="/terms" onClick={() => setMobileOpen(false)} className="hover:text-[#F1F5F9] transition-colors">Terms</Link>
+            <span>&bull;</span>
+            <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" className="hover:text-[#F1F5F9] transition-colors">1930 Portal</a>
           </div>
-          <p className="text-slate-400 text-[11px] leading-relaxed">
-            Call <strong className="text-slate-200">1930</strong> immediately if you transferred money to a scammer.
-          </p>
-        </div>
 
-        {/* Legal Links */}
-        <div className="px-1 flex items-center justify-between text-[11px] text-slate-500">
-          <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
-          <span>&bull;</span>
-          <Link to="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>
-          <span>&bull;</span>
-          <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" className="hover:text-slate-300 transition-colors">Portal</a>
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="w-full text-[#A8B5C7] hover:text-[#DC2626] hover:bg-red-950/20 flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5 text-[#8291A6]" />
+            <span>Sign Out</span>
+          </button>
         </div>
-
-        {/* Logout Link */}
-        <button
-          onClick={handleLogout}
-          className="w-full text-slate-400 hover:text-red-400 hover:bg-red-500/10 flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors"
-        >
-          <LogOut className="w-3.5 h-3.5 text-slate-500" />
-          <span>Sign Out</span>
-        </button>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }

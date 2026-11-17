@@ -17,8 +17,7 @@ import {
   Search, 
   ExternalLink,
   Clock,
-  Trash2,
-  Shield
+  Trash2
 } from '../components/Icons';
 
 const STORAGE_KEY = 'scam_analyzer_scan_history';
@@ -39,7 +38,7 @@ export default function Dashboard() {
         setHistory(JSON.parse(saved));
       }
     } catch {
-      // Fallback
+      // Storage fallback
     }
   }, []);
 
@@ -60,7 +59,7 @@ export default function Dashboard() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       } catch {
-        // Fallback
+        // Storage fail-safe
       }
       return updated;
     });
@@ -70,7 +69,7 @@ export default function Dashboard() {
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
-      // Fallback
+      // Storage fail-safe
     }
     setHistory([]);
   }
@@ -95,9 +94,9 @@ export default function Dashboard() {
       { label: 'Standard Bank Alert', value: 'Dear customer, your account XXX1234 was credited with INR 2,500.00 on 17-Nov-2026. Ref UPI/43210.' },
     ],
     phone: [
-      { label: 'International Number (+92)', value: '+92 300 1234567' },
+      { label: 'International Caller (+92)', value: '+92 300 1234567' },
       { label: 'Suspect Toll-Free / Burner', value: '9876543210' },
-      { label: 'Standard Mobile Line', value: '+91 9820012345' },
+      { label: 'Standard Domestic Line', value: '+91 9820012345' },
     ],
     upi: [
       { label: 'Fake Refund Desk', value: 'refund-care@oksbi' },
@@ -149,69 +148,47 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-5xl mx-auto">
-        {/* Emergency Notice Banner */}
-        <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded bg-emerald-950/60 border border-emerald-800 text-emerald-400 flex items-center justify-center flex-shrink-0">
-              <PhoneCall className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-100 flex items-center gap-2">
-                <span>National Cyber Crime Helpline: 1930</span>
-                <span className="text-[10px] text-emerald-400 bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-800">
-                  24x7 TOLL FREE
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                If money has been debited without authorization, call 1930 immediately to freeze beneficiary bank accounts.
-              </p>
-            </div>
-          </div>
-
-          <a
-            href="https://cybercrime.gov.in"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded border border-slate-700 transition-colors whitespace-nowrap self-start md:self-auto"
-          >
-            <span>cybercrime.gov.in</span>
-            <ExternalLink className="w-3 h-3 text-slate-400" />
-          </a>
-        </div>
-
+      <div className="space-y-5 max-w-5xl mx-auto">
         {/* Page Header */}
-        <div className="border-b border-slate-800 pb-3">
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-100 tracking-tight">
-            UPI & Cyber Fraud Identifier Inspector
+        <div className="border-b border-[#26364D] pb-3">
+          <h1 className="text-xl font-semibold text-[#F1F5F9] tracking-tight">
+            UPI & Financial Cyber Fraud Inspector
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Check suspicious URLs, payment handles, telephone numbers, and SMS text against known cyber fraud patterns.
+          <p className="text-xs text-[#A8B5C7] mt-1">
+            Analyze suspect URLs, payment identifiers, phone numbers, and message content against verified fraud patterns.
           </p>
         </div>
 
         {/* Inspection Form Console */}
-        <div className="bg-slate-900 border border-slate-800 rounded-lg p-5">
-          {/* Tabs */}
-          <div className="flex gap-1 border-b border-slate-800 pb-3 mb-4 overflow-x-auto">
+        <div className="bg-[#111C2E] border border-[#26364D] rounded-lg p-4 sm:p-5">
+          {/* Tab Selector */}
+          <div 
+            role="tablist" 
+            aria-label="Input Type Selector"
+            className="flex gap-1 border-b border-[#26364D] pb-3 mb-4 overflow-x-auto"
+          >
             {TABS.map((tab) => {
               const active = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
+                  role="tab"
+                  id={`tab-${tab.id}`}
+                  aria-selected={active}
+                  aria-controls={`panel-${tab.id}`}
                   type="button"
                   onClick={() => {
                     setActiveTab(tab.id);
                     setInputValue('');
                     setCurrentResult(null);
                   }}
-                  className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
                     active
-                      ? 'bg-blue-600 text-white'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                      ? 'bg-[#3B82F6] text-white'
+                      : 'text-[#A8B5C7] hover:text-[#F1F5F9] hover:bg-[#080F1D]'
                   }`}
                 >
-                  <span>{tab.icon}</span>
+                  <span className={active ? 'text-white' : 'text-[#8291A6]'}>{tab.icon}</span>
                   <span>{tab.label}</span>
                 </button>
               );
@@ -220,6 +197,9 @@ export default function Dashboard() {
 
           {/* Form */}
           <form
+            id={`panel-${activeTab}`}
+            role="tabpanel"
+            aria-labelledby={`tab-${activeTab}`}
             onSubmit={(e) => {
               e.preventDefault();
               executeAnalysis();
@@ -228,34 +208,40 @@ export default function Dashboard() {
           >
             {activeTab !== 'qr' ? (
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1.5">
+                <label 
+                  htmlFor="main-input"
+                  className="block text-xs font-medium text-[#A8B5C7] mb-1.5"
+                >
                   Enter {TABS.find((t) => t.id === activeTab)?.label} to Inspect
                 </label>
                 {activeTab === 'message' ? (
                   <textarea
+                    id="main-input"
                     rows={4}
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     placeholder={TABS.find((t) => t.id === activeTab)?.placeholder}
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full px-3 py-2 bg-[#080F1D] border border-[#26364D] rounded-md text-xs sm:text-sm text-[#F1F5F9] placeholder-[#8291A6] focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] transition-colors resize-y"
                   />
                 ) : (
                   <div className="relative">
                     <input
+                      id="main-input"
                       type="text"
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       placeholder={TABS.find((t) => t.id === activeTab)?.placeholder}
-                      className="w-full pl-9 pr-16 py-2.5 bg-slate-950 border border-slate-800 rounded text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                      className="w-full pl-9 pr-16 py-2 bg-[#080F1D] border border-[#26364D] rounded-md text-xs sm:text-sm text-[#F1F5F9] placeholder-[#8291A6] focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] transition-colors font-mono"
                     />
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#8291A6]">
                       {TABS.find((t) => t.id === activeTab)?.icon}
                     </div>
                     {inputValue && (
                       <button
                         type="button"
                         onClick={() => setInputValue('')}
-                        className="absolute inset-y-0 right-3 flex items-center text-xs text-slate-400 hover:text-slate-200"
+                        className="absolute inset-y-0 right-3 flex items-center text-xs text-[#8291A6] hover:text-[#F1F5F9]"
+                        aria-label="Clear input"
                       >
                         Clear
                       </button>
@@ -266,26 +252,34 @@ export default function Dashboard() {
             ) : (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                    Upload Screenshot or QR Code Image
+                  <label 
+                    htmlFor="qr-file-input"
+                    className="block text-xs font-medium text-[#A8B5C7] mb-1.5"
+                  >
+                    Select Receipt Screenshot or QR Code Image
                   </label>
                   <input
+                    id="qr-file-input"
                     type="file"
                     accept="image/*"
                     onChange={(e) => setFileInput(e.target.files[0])}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded text-xs text-slate-300 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white"
+                    className="w-full px-3 py-2 bg-[#080F1D] border border-[#26364D] rounded-md text-xs text-[#A8B5C7] file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-medium file:bg-[#3B82F6] file:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                    Optional Decoded Intent URL
+                  <label 
+                    htmlFor="qr-uri-input"
+                    className="block text-xs font-medium text-[#A8B5C7] mb-1.5"
+                  >
+                    Optional Decoded Intent URI
                   </label>
                   <input
+                    id="qr-uri-input"
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     placeholder="e.g. upi://pay?pa=recipient@bank&am=500"
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 bg-[#080F1D] border border-[#26364D] rounded-md text-xs sm:text-sm text-[#F1F5F9] placeholder-[#8291A6] focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] font-mono"
                   />
                 </div>
               </div>
@@ -294,13 +288,13 @@ export default function Dashboard() {
             {/* Test Presets */}
             {PRESETS[activeTab] && (
               <div className="flex flex-wrap items-center gap-2 text-xs">
-                <span className="text-slate-500 text-[11px]">Test examples:</span>
+                <span className="text-[#8291A6] text-[11px]">Test samples:</span>
                 {PRESETS[activeTab].map((p, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => handlePresetSelect(p.value)}
-                    className="px-2.5 py-1 rounded text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
+                    className="px-2.5 py-1 rounded text-xs bg-[#080F1D] hover:bg-[#16243b] text-[#A8B5C7] hover:text-[#F1F5F9] border border-[#26364D] transition-colors"
                   >
                     {p.label}
                   </button>
@@ -311,7 +305,7 @@ export default function Dashboard() {
             <button
               type="submit"
               disabled={!inputValue && activeTab !== 'qr' && !fileInput}
-              className="py-2.5 px-5 rounded font-semibold text-xs bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors inline-flex items-center gap-2"
+              className="btn-primary"
             >
               <Search className="w-3.5 h-3.5" />
               <span>Inspect Payload</span>
@@ -330,19 +324,19 @@ export default function Dashboard() {
         )}
 
         {/* Real User Scan History from localStorage */}
-        <div className="bg-slate-900 border border-slate-800 rounded-lg p-5">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+        <div className="bg-[#111C2E] border border-[#26364D] rounded-lg p-4 sm:p-5">
+          <div className="flex items-center justify-between pb-3 border-b border-[#26364D] mb-3">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-slate-400" />
-              <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+              <Clock className="w-4 h-4 text-[#8291A6]" />
+              <h2 className="text-xs font-semibold text-[#F1F5F9] uppercase tracking-wider">
                 Recent Scans in Current Session
-              </h3>
+              </h2>
             </div>
             {history.length > 0 && (
               <button
                 type="button"
                 onClick={clearHistory}
-                className="inline-flex items-center gap-1 text-[11px] text-slate-400 hover:text-red-400 transition-colors"
+                className="inline-flex items-center gap-1 text-[11px] text-[#8291A6] hover:text-[#DC2626] transition-colors"
               >
                 <Trash2 className="w-3 h-3" />
                 <span>Clear History</span>
@@ -351,40 +345,40 @@ export default function Dashboard() {
           </div>
 
           {history.length > 0 ? (
-            <div className="divide-y divide-slate-800/80">
+            <div className="divide-y divide-[#26364D]">
               {history.map((scan) => {
                 const isHigh = scan.riskLevel === 'high' || scan.score >= 12;
                 const isMed = scan.riskLevel === 'medium' || (scan.score >= 5 && scan.score < 12);
                 return (
                   <div
                     key={scan.id}
-                    className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-800/40 px-2 rounded transition-colors text-xs"
+                    className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-[#080F1D]/60 px-2 rounded transition-colors text-xs"
                   >
                     <div className="flex items-center gap-2.5">
-                      <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[10px] font-bold border border-slate-700">
+                      <span className="px-1.5 py-0.5 rounded bg-[#080F1D] text-[#A8B5C7] font-mono text-[10px] font-semibold border border-[#26364D]">
                         {scan.type}
                       </span>
-                      <span className="font-mono text-slate-200 truncate max-w-sm sm:max-w-md">
+                      <span className="font-mono text-[#F1F5F9] truncate max-w-sm sm:max-w-md">
                         {scan.target}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-3 self-end sm:self-center">
                       <span
-                        className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${
+                        className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded border ${
                           isHigh
-                            ? 'bg-red-950/60 text-red-300 border-red-800'
+                            ? 'bg-[#DC2626]/20 text-[#DC2626] border-[#DC2626]/40'
                             : isMed
-                            ? 'bg-amber-950/60 text-amber-300 border-amber-800'
-                            : 'bg-emerald-950/60 text-emerald-300 border-emerald-800'
+                            ? 'bg-[#D97706]/20 text-[#D97706] border-[#D97706]/40'
+                            : 'bg-[#16A34A]/20 text-[#16A34A] border-[#16A34A]/40'
                         }`}
                       >
                         {scan.verdict}
                       </span>
-                      <span className="text-slate-400 font-mono">
+                      <span className="text-[#8291A6] font-mono">
                         {scan.score}/25
                       </span>
-                      <span className="text-slate-500 text-[11px]">
+                      <span className="text-[#8291A6] text-[11px]">
                         {scan.timestamp}
                       </span>
                     </div>
@@ -393,8 +387,8 @@ export default function Dashboard() {
               })}
             </div>
           ) : (
-            <div className="py-4 text-center text-xs text-slate-500">
-              No recent inspections recorded in this browser session. Enter a target above to begin.
+            <div className="py-4 text-center text-xs text-[#8291A6]">
+              No recent inspections recorded in this browser session. Enter an identifier above to begin.
             </div>
           )}
         </div>
