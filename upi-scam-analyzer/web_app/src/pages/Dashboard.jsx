@@ -1,6 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import AppLayout from '../components/AppLayout';
-import ScanningLoader from '../components/ScanningLoader';
 import ResultsDashboard from '../components/ResultsDashboard';
 import { 
   analyzeUrl, 
@@ -16,118 +15,109 @@ import {
   CreditCard, 
   QrCode, 
   Search, 
-  Shield, 
   ShieldCheck, 
   ShieldAlert, 
   AlertTriangle, 
   ExternalLink,
   Cpu,
-  Activity,
-  Zap,
-  Terminal,
   Clock,
-  Sparkles,
-  Check
+  Trash2
 } from '../components/Icons';
 
-/**
- * Modern Cybersecurity Dashboard
- * Centralized Threat Detection Console featuring:
- * - Sleek dark slate & glassmorphism aesthetic
- * - Multi-tab input for URLs, SMS/Text, Phone Numbers, UPI VPAs, and QR screenshots
- * - 1-Click quick test presets for testing threat vectors
- * - Real-time dynamic multi-stage scanning loader
- * - Comprehensive Results Dashboard with Risk Score Gauge & Categorized Threat Indicators
- * - Session audit log of recent scans
- */
+const STORAGE_KEY = 'scam_analyzer_scan_history';
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('url'); // 'url' | 'message' | 'phone' | 'upi' | 'qr'
   const [inputValue, setInputValue] = useState('');
   const [fileInput, setFileInput] = useState(null);
-  const [isScanning, setIsScanning] = useState(false);
   const [currentResult, setCurrentResult] = useState(null);
+  const [history, setHistory] = useState([]);
   const resultsRef = useRef(null);
 
-  // In-session scan history log
-  const [recentScans, setRecentScans] = useState([
-    {
-      id: 'scan-1',
-      type: 'URL',
-      target: 'http://192.168.1.10/verify-bank-account',
-      verdict: 'CRITICAL THREAT',
-      score: 22,
-      riskLevel: 'high',
-      time: '2 mins ago',
-    },
-    {
-      id: 'scan-2',
-      type: 'SMS',
-      target: 'URGENT: Electricity disconnected tonight. Call 9876543210...',
-      verdict: 'CRITICAL THREAT',
-      score: 19,
-      riskLevel: 'high',
-      time: '14 mins ago',
-    },
-    {
-      id: 'scan-3',
-      type: 'UPI',
-      target: 'merchant@okaxis',
-      verdict: 'VERIFIED SAFE',
-      score: 0,
-      riskLevel: 'low',
-      time: '1 hour ago',
-    },
-  ]);
+  // Load real scan history from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        setHistory(JSON.parse(saved));
+      }
+    } catch {
+      // Local storage fallback
+    }
+  }, []);
 
-  // Tab configurations
+  function saveScanToHistory(res) {
+    if (!res) return;
+    const entry = {
+      id: `scan-${Date.now()}`,
+      type: res.type ? res.type.toUpperCase() : activeTab.toUpperCase(),
+      target: res.input || inputValue,
+      verdict: res.status,
+      score: res.score,
+      riskLevel: res.riskLevel,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setHistory((prev) => {
+      const updated = [entry, ...prev.filter((i) => i.target !== entry.target)].slice(0, 10);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {
+        // Storage fail-safe
+      }
+      return updated;
+    });
+  }
+
+  function clearHistory() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Storage fail-safe
+    }
+    setHistory([]);
+  }
+
   const TABS = [
     { id: 'url', label: 'Web URL', icon: <Globe className="w-4 h-4" />, placeholder: 'e.g. http://192.168.1.10/verify-bank-account or http://kyc-update.com' },
-    { id: 'message', label: 'Text / SMS', icon: <MessageSquare className="w-4 h-4" />, placeholder: 'Paste suspicious SMS, WhatsApp message, or urgent lottery/KYC notification...' },
+    { id: 'message', label: 'SMS / Text', icon: <MessageSquare className="w-4 h-4" />, placeholder: 'Paste suspicious SMS, WhatsApp text, or notification content...' },
     { id: 'phone', label: 'Phone Number', icon: <PhoneCall className="w-4 h-4" />, placeholder: 'e.g. +91 9876543210 or +92 300 1234567' },
     { id: 'upi', label: 'UPI VPA', icon: <CreditCard className="w-4 h-4" />, placeholder: 'e.g. refund-care@oksbi or cashback-support@ybl' },
-    { id: 'qr', label: 'QR / Image', icon: <QrCode className="w-4 h-4" />, placeholder: 'Extracted payment URI or QR intent payload (optional)' },
+    { id: 'qr', label: 'QR Payload', icon: <QrCode className="w-4 h-4" />, placeholder: 'Decoded intent URI e.g. upi://pay?pa=recipient@bank&am=500' },
   ];
 
-  // Quick preset test chips
   const PRESETS = {
     url: [
-      { label: 'Phishing Bank URL (IP)', value: 'http://192.168.1.10/verify-bank-account' },
-      { label: 'Shortened Link Lure', value: 'http://bit.ly/claim-sbi-reward-points' },
-      { label: 'Verified Safe (NPCI)', value: 'https://npci.org.in' },
+      { label: 'Phishing IP Address', value: 'http://192.168.1.10/verify-bank-account' },
+      { label: 'Obfuscated Short URL', value: 'http://bit.ly/claim-sbi-reward-points' },
+      { label: 'Legitimate Portal (NPCI)', value: 'https://npci.org.in' },
     ],
     message: [
-      { label: 'Electricity Disconnection Scam', value: 'URGENT: Dear customer, your electricity power will be disconnected tonight at 9:30 PM. Immediately contact electricity officer at 9876543210.' },
-      { label: 'Lottery & KYC Lure', value: 'Congratulations! You won ₹25,00,000 in Kaun Banega Crorepati. To claim refund verify immediately at http://kbc-reward.com' },
+      { label: 'Electricity Disconnection Threat', value: 'URGENT: Dear customer, your electricity power will be disconnected tonight at 9:30 PM. Immediately contact electricity officer at 9876543210.' },
+      { label: 'Lottery & Refund Solicitation', value: 'Congratulations! You won ₹25,00,000 in Lucky Draw. To claim refund verify immediately at http://kbc-reward.com' },
       { label: 'Standard Bank Transaction', value: 'Dear customer, your account XXX1234 was credited with INR 2,500.00 on 17-Nov-2026. Ref UPI/43210.' },
     ],
     phone: [
-      { label: 'International Imposter (+92)', value: '+92 300 1234567' },
-      { label: '1930 Blacklisted Number', value: '9876543210' },
-      { label: 'Standard Verified Mobile', value: '+91 9820012345' },
+      { label: 'International Imposter Call (+92)', value: '+92 300 1234567' },
+      { label: 'Reported Scam Number', value: '9876543210' },
+      { label: 'Standard Domestic Line', value: '+91 9820012345' },
     ],
     upi: [
-      { label: 'Fraudulent Refund Handle', value: 'refund-care@oksbi' },
-      { label: 'Numeric Burner VPA', value: '9876543210@paytm' },
-      { label: 'Verified Merchant Handle', value: 'store@okaxis' },
+      { label: 'Suspect Refund Handle', value: 'refund-care@oksbi' },
+      { label: 'Numeric Virtual Handle', value: '9876543210@paytm' },
+      { label: 'Standard Merchant Handle', value: 'store@okaxis' },
     ],
     qr: [
-      { label: 'Phishing QR Intent', value: 'upi://pay?pa=refund-desk@ybl&pn=RefundDesk&am=5000' },
-      { label: 'Standard QR Intent', value: 'upi://pay?pa=merchant@okaxis&pn=SuperMarket&am=250' },
+      { label: 'Collect Request Payload', value: 'upi://pay?pa=refund-desk@ybl&pn=RefundDesk&am=5000' },
+      { label: 'Standard Merchant QR', value: 'upi://pay?pa=merchant@okaxis&pn=SuperMarket&am=250' },
     ],
   };
 
-  function executeAnalysis(targetToAnalyze) {
-    const val = targetToAnalyze !== undefined ? targetToAnalyze : inputValue;
-    if (!val && activeTab !== 'qr' && !fileInput) return;
+  function executeAnalysis(targetOverride) {
+    const target = (targetOverride !== undefined ? targetOverride : inputValue).trim();
+    if (!target && activeTab !== 'qr' && !fileInput) return;
 
-    setIsScanning(true);
-    setCurrentResult(null);
-  }
-
-  function handleScanningComplete() {
     let res = null;
-    const target = inputValue.trim();
-
     if (activeTab === 'url') {
       res = analyzeUrl(target || 'http://192.168.1.10/verify-bank-account');
     } else if (activeTab === 'message') {
@@ -137,35 +127,21 @@ export default function Dashboard() {
     } else if (activeTab === 'upi') {
       res = analyzeUpiId(target || 'refund-care@oksbi');
     } else if (activeTab === 'qr') {
-      const fileName = fileInput ? fileInput.name : 'scanned_qr_payload.png';
+      const fileName = fileInput ? fileInput.name : 'qr_payload.png';
       res = analyzeOcrQr(fileName, target);
     }
 
     setCurrentResult(res);
-    setIsScanning(false);
-
-    // Prepend to recent scans log
-    if (res) {
-      const newEntry = {
-        id: `scan-${Date.now()}`,
-        type: activeTab.toUpperCase(),
-        target: res.input || target,
-        verdict: res.status,
-        score: res.score,
-        riskLevel: res.riskLevel,
-        time: 'Just now',
-      };
-      setRecentScans((prev) => [newEntry, ...prev.slice(0, 9)]);
-    }
+    saveScanToHistory(res);
 
     setTimeout(() => {
       resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    }, 50);
   }
 
-  function handlePresetClick(presetValue) {
-    setInputValue(presetValue);
-    executeAnalysis(presetValue);
+  function handlePresetSelect(val) {
+    setInputValue(val);
+    executeAnalysis(val);
   }
 
   function handleReset() {
@@ -176,36 +152,34 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="space-y-8 max-w-6xl mx-auto">
-        {/* National Cyber Crime Helpline 1930 Intelligence Banner */}
-        <div className="bg-slate-900/80 rounded-2xl border border-slate-800 backdrop-blur-xl p-5 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden">
-          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="flex items-start sm:items-center gap-3.5">
-            <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
-              <PhoneCall className="w-5 h-5 animate-pulse" />
+      <div className="space-y-6 max-w-5xl mx-auto">
+        {/* National Helpline 1930 Banner */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
+              <PhoneCall className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wide">
-                  Helpline 1930 Active
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wide">
+                  Helpline 1930
                 </span>
                 <span className="text-xs font-semibold text-slate-300">
                   National Cyber Crime Reporting Portal
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-                If you suspect unauthorized financial debit or scam solicitation, call <strong>1930</strong> immediately to invoke the Citizen Financial Cyber Fraud Reporting System within the golden hour.
+                If you suspect unauthorized financial debit, call <strong>1930</strong> immediately to initiate account freezing through the Citizen Financial Cyber Fraud Reporting System.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 self-start md:self-center flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <a
               href="https://cybercrime.gov.in"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors whitespace-nowrap"
             >
               <span>cybercrime.gov.in</span>
               <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
@@ -213,40 +187,20 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Hero Section */}
-        <div className="text-center space-y-3 pt-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-mono font-semibold">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>High-Trust Payment Threat Intelligence Engine</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-100 tracking-tight">
-            Scam Analyzer <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-emerald-400">Defense Console</span>
+        {/* Page Header */}
+        <div className="border-b border-slate-800 pb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">
+            Payment Scam and Fraud Threat Analyzer
           </h1>
-          <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Verify suspicious phishing URLs, urgent SMS lures, spoofed caller IDs, and fraudulent UPI addresses in real time before sending money.
+          <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl leading-relaxed">
+            Verify suspect URLs, SMS notifications, telephone numbers, and UPI handles against verifiable heuristic indicators and national cybercrime safety advisories.
           </p>
         </div>
 
-        {/* Centralized Search & Input Card */}
-        <div className="bg-slate-900/90 rounded-2xl border border-slate-800 backdrop-blur-xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-slate-800 mb-6">
-            <div>
-              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-                <Search className="w-4 h-4 text-blue-400" />
-                <span>Multi-Vector Threat Inspection</span>
-              </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Select an entity category below, paste your suspicious payload, and run comprehensive heuristic checks.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>42k+ Rules Synced</span>
-            </div>
-          </div>
-
-          {/* Intuitive Segmented Pill Selector Tabs */}
-          <div className="flex gap-2 p-1.5 rounded-xl bg-slate-950/80 border border-slate-800 overflow-x-auto mb-6 scrollbar-none">
+        {/* Centralized Search & Input Console */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 sm:p-6 shadow-sm">
+          {/* Tab Selector */}
+          <div className="flex gap-1.5 p-1 rounded-lg bg-slate-950 border border-slate-800 overflow-x-auto mb-5 scrollbar-none">
             {TABS.map((tab) => {
               const active = activeTab === tab.id;
               return (
@@ -258,22 +212,20 @@ export default function Dashboard() {
                     setInputValue('');
                     setCurrentResult(null);
                   }}
-                  className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${
+                  className={`flex-1 py-2 px-3 rounded-md text-xs font-semibold transition-colors flex items-center justify-center gap-2 whitespace-nowrap ${
                     active
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                      ? 'bg-blue-600 text-white'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
                   }`}
                 >
-                  <span className={active ? 'text-white' : 'text-slate-400'}>
-                    {tab.icon}
-                  </span>
+                  <span>{tab.icon}</span>
                   <span>{tab.label}</span>
                 </button>
               );
             })}
           </div>
 
-          {/* Main Input Form */}
+          {/* Form */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -282,8 +234,8 @@ export default function Dashboard() {
             className="space-y-4"
           >
             {activeTab !== 'qr' ? (
-              <div className="relative">
-                <label className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 mb-2">
+              <div>
+                <label className="block text-xs font-mono font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
                   Target {TABS.find((t) => t.id === activeTab)?.label}
                 </label>
                 {activeTab === 'message' ? (
@@ -292,7 +244,7 @@ export default function Dashboard() {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     placeholder={TABS.find((t) => t.id === activeTab)?.placeholder}
-                    className="w-full px-4 py-3 bg-slate-950/90 border border-slate-800 rounded-xl text-xs sm:text-sm font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-y"
+                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-xs sm:text-sm font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors resize-y"
                   />
                 ) : (
                   <div className="relative">
@@ -301,9 +253,9 @@ export default function Dashboard() {
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       placeholder={TABS.find((t) => t.id === activeTab)?.placeholder}
-                      className="w-full pl-11 pr-24 py-3.5 bg-slate-950/90 border border-slate-800 rounded-xl text-xs sm:text-sm font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                      className="w-full pl-10 pr-20 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-xs sm:text-sm font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
                     />
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
                       {TABS.find((t) => t.id === activeTab)?.icon}
                     </div>
                     {inputValue && (
@@ -319,20 +271,20 @@ export default function Dashboard() {
                 )}
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div>
-                  <label className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 mb-2">
-                    Upload Screenshot or QR Code Image
+                  <label className="block text-xs font-mono font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                    Select Screenshot or QR Image File
                   </label>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={(e) => setFileInput(e.target.files[0])}
-                    className="w-full px-4 py-3 bg-slate-950/90 border border-slate-800 rounded-xl text-xs font-mono text-slate-300 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-slate-300 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 mb-2">
+                  <label className="block text-xs font-mono font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
                     Optional Extracted Intent or URI
                   </label>
                   <input
@@ -340,74 +292,47 @@ export default function Dashboard() {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     placeholder="e.g. upi://pay?pa=recipient@bank&am=500"
-                    className="w-full px-4 py-3 bg-slate-950/90 border border-slate-800 rounded-xl text-xs font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
             )}
 
-            {/* Quick Test Presets */}
+            {/* Functional Sample Test Chips */}
             {PRESETS[activeTab] && (
-              <div className="pt-1">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-2 font-bold">
-                  Quick-Test Presets (Click to run):
+              <div>
+                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-500 block mb-1.5 font-semibold">
+                  Sample Test Inputs:
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {PRESETS[activeTab].map((p, idx) => (
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => handlePresetClick(p.value)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-mono bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/60 transition-all flex items-center gap-1.5"
+                      onClick={() => handlePresetSelect(p.value)}
+                      className="px-2.5 py-1 rounded text-xs font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
                     >
-                      <Zap className="w-3 h-3 text-amber-400 flex-shrink-0" />
-                      <span>{p.label}</span>
+                      {p.label}
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Submit Button */}
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={isScanning || (!inputValue && activeTab !== 'qr' && !fileInput)}
-                className="w-full py-3.5 px-6 rounded-xl font-bold text-sm tracking-wide bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2.5"
-              >
-                {isScanning ? (
-                  <>
-                    <Activity className="w-4 h-4 animate-spin" />
-                    <span>Engaging Threat Intelligence Engine...</span>
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-4 h-4" />
-                    <span>Execute Threat Analysis</span>
-                    <span className="hidden sm:inline-block ml-1 px-1.5 py-0.5 rounded bg-blue-700/60 text-[10px] font-mono text-blue-200">
-                      Enter ↵
-                    </span>
-                  </>
-                )}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={!inputValue && activeTab !== 'qr' && !fileInput}
+              className="w-full py-2.5 px-4 rounded-lg font-semibold text-xs tracking-wide bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors flex items-center justify-center gap-2"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span>Execute Threat Analysis</span>
+            </button>
           </form>
         </div>
 
-        {/* Dynamic Scanning & Loader State */}
-        {isScanning && (
-          <div className="animate-fadeIn">
-            <ScanningLoader
-              onComplete={handleScanningComplete}
-              targetType={activeTab.toUpperCase()}
-              targetValue={inputValue}
-            />
-          </div>
-        )}
-
-        {/* Modular Results Dashboard Component */}
-        {currentResult && !isScanning && (
-          <div ref={resultsRef} className="animate-fadeIn">
+        {/* Results Component */}
+        {currentResult && (
+          <div ref={resultsRef} className="pt-2">
             <ResultsDashboard
               result={currentResult}
               onReset={handleReset}
@@ -415,105 +340,113 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* System Capabilities Overview (Heuristics & Threat Feeds) */}
+        {/* Core Capabilities */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-          <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 backdrop-blur-xl flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0">
-              <Cpu className="w-5 h-5" />
+          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Cpu className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-100">Multi-Vector Heuristics</h3>
+              <h3 className="text-xs font-bold text-slate-200">Rule-Based Evaluation</h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Evaluates URLs, SMS lures, Phone numbers, and UPI handles with weighted pattern matching.
+                Applies weighted checks for known phishing syntax, raw IP destinations, and urgency triggers.
               </p>
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 backdrop-blur-xl flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
-              <ShieldCheck className="w-5 h-5" />
+          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-100">Zero Retention Guarantee</h3>
+              <h3 className="text-xs font-bold text-slate-200">Client-Side Processing</h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                All scans execute safely in temporary memory. Sensitive bank account and personal data are never logged.
+                Inspections run in local memory. Sensitive bank identifiers and user queries are not persisted to remote databases.
               </p>
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 backdrop-blur-xl flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0">
-              <PhoneCall className="w-5 h-5" />
+          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <PhoneCall className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-100">Golden Hour Rapid Action</h3>
+              <h3 className="text-xs font-bold text-slate-200">Helpline 1930 Integration</h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Direct integration guidance with the National Cyber Crime Reporting Portal (1930) for quick account freeze.
+                Step-by-step reporting protocols aligned with the National Cyber Crime Reporting Portal.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Live Session Activity / Recent Audit Log */}
-        <div className="bg-slate-900/90 rounded-2xl border border-slate-800 backdrop-blur-xl p-6 shadow-2xl">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-slate-800 text-blue-400 flex items-center justify-center">
-                <Clock className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-100">Live Session Threat Log</h3>
-                <p className="text-[11px] text-slate-400">Inspections recorded during your verified security session</p>
-              </div>
+        {/* Real User Scan History from localStorage */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-slate-400" />
+              <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-mono">
+                Recent Session Inspections
+              </h3>
             </div>
-            <span className="text-[10px] font-mono text-slate-500 uppercase">
-              {recentScans.length} Entries Logged
-            </span>
+            {history.length > 0 && (
+              <button
+                type="button"
+                onClick={clearHistory}
+                className="inline-flex items-center gap-1 text-[11px] font-mono text-slate-500 hover:text-red-400 transition-colors"
+              >
+                <Trash2 className="w-3 h-3" />
+                <span>Clear History</span>
+              </button>
+            )}
           </div>
 
-          <div className="divide-y divide-slate-800/80">
-            {recentScans.map((scan) => {
-              const isHigh = scan.riskLevel === 'high' || scan.score >= 12;
-              const isMed = scan.riskLevel === 'medium' || (scan.score >= 5 && scan.score < 12);
-              return (
-                <div
-                  key={scan.id}
-                  className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-800/30 px-3 rounded-xl transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="w-10 h-7 rounded-md bg-slate-800 text-blue-400 font-mono text-[10px] font-bold flex items-center justify-center border border-slate-700 flex-shrink-0">
-                      {scan.type}
-                    </span>
-                    <div>
-                      <p className="text-xs font-mono font-bold text-slate-200 truncate max-w-sm sm:max-w-md">
+          {history.length > 0 ? (
+            <div className="divide-y divide-slate-800/80">
+              {history.map((scan) => {
+                const isHigh = scan.riskLevel === 'high' || scan.score >= 12;
+                const isMed = scan.riskLevel === 'medium' || (scan.score >= 5 && scan.score < 12);
+                return (
+                  <div
+                    key={scan.id}
+                    className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-800/40 px-2 rounded-lg transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-8 h-6 rounded bg-slate-800 text-slate-300 font-mono text-[10px] font-bold flex items-center justify-center border border-slate-700 flex-shrink-0">
+                        {scan.type}
+                      </span>
+                      <p className="text-xs font-mono text-slate-200 truncate max-w-sm sm:max-w-md">
                         {scan.target}
                       </p>
-                      <p className="text-[11px] text-slate-500 font-mono mt-0.5">
-                        {scan.time}
-                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 self-end sm:self-center">
+                      <span
+                        className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
+                          isHigh
+                            ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                            : isMed
+                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                            : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                        }`}
+                      >
+                        {scan.verdict}
+                      </span>
+                      <span className="text-xs font-mono text-slate-400">
+                        {scan.score}/25
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-500">
+                        {scan.timestamp}
+                      </span>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-3 self-end sm:self-center">
-                    <span
-                      className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
-                        isHigh
-                          ? 'bg-red-500/10 text-red-400 border-red-500/30'
-                          : isMed
-                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                          : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                      }`}
-                    >
-                      {scan.verdict}
-                    </span>
-                    <span className="text-xs font-mono font-bold text-slate-400">
-                      {scan.score}/25
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="py-6 text-center text-xs text-slate-500 font-mono">
+              No recent inspections recorded in this browser session. Enter an identifier above to begin.
+            </div>
+          )}
         </div>
       </div>
     </AppLayout>
