@@ -21,3 +21,4 @@ if (require.main === module) {
 }
 
 module.exports = require('./tests/app-tests.js');
+
