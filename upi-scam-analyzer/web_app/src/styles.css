@@ -1,7 +1,6 @@
 :root {
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --primary-light: rgba(59, 130, 246, 0.15);
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
   --slate-950: #020617;
   --slate-900: #0f172a;
   --slate-800: #1e293b;
@@ -9,20 +8,18 @@
   --slate-600: #475569;
   --slate-500: #64748b;
   --slate-400: #94a3b8;
+  --slate-300: #cbd5e1;
   --slate-200: #e2e8f0;
-  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
   
   /* Security accents */
-  --danger: #ef4444;
-  --danger-light: rgba(239, 68, 68, 0.15);
-  --warning: #f59e0b;
-  --warning-light: rgba(245, 158, 11, 0.15);
-  --safe: #10b981;
-  --safe-light: rgba(16, 185, 129, 0.15);
+  --danger: #dc2626;
+  --warning: #d97706;
+  --safe: #059669;
   
   --bg: #020617;
   --text: #f1f5f9;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 * {
@@ -38,30 +35,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Glassmorphism & Cyber Glow utilities */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(51, 65, 85, 0.6);
-}
-
-.glow-blue {
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.25);
-}
-
-.glow-emerald {
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
-}
-
-.glow-red {
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
-}
-
-/* Custom dark scrollbar */
+/* Custom clean scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -70,25 +47,15 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: #1e293b;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #334155;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.35s ease-out forwards;
+/* Accessible focus outline */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
 }

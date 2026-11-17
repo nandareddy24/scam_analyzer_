@@ -2,101 +2,87 @@ import { ShieldAlert, ShieldCheck, AlertTriangle } from './Icons';
 
 /**
  * RiskGauge Component
- * Clean, production-ready threat assessment meter.
- * Displays calculated threat score (0-25), risk index percentage,
- * and high-contrast severity badge without decorative blur artifacts.
+ * Clean, production-grade security verdict card.
+ * Replaces gimmicky circular gauges with a clean status banner,
+ * horizontal severity bar, and numerical penalty score.
  */
 export default function RiskGauge({ score = 0, maxScore = 25, status = 'VERIFIED SAFE', confidence = 95, riskLevel = 'low' }) {
   const normalized = Math.min(100, Math.max(0, Math.round((score / maxScore) * 100)));
 
-  const radius = 52;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (normalized / 100) * (circumference * 0.75);
-
   const isHighRisk = riskLevel === 'high' || score >= 12;
   const isMediumRisk = riskLevel === 'medium' || (score >= 5 && score < 12);
 
-  const colorConfig = isHighRisk
+  const config = isHighRisk
     ? {
-        stroke: '#ef4444',
-        text: 'text-red-400',
-        bgPill: 'bg-red-500/10 text-red-400 border-red-500/30',
-        icon: <ShieldAlert className="w-4 h-4 text-red-400" />,
+        border: 'border-red-900/60 bg-red-950/20',
+        badge: 'bg-red-900/40 text-red-300 border-red-800',
+        barColor: 'bg-red-500',
+        icon: <ShieldAlert className="w-5 h-5 text-red-400" />,
         label: 'HIGH RISK THREAT',
+        desc: 'Multiple critical fraud indicators detected. High probability of financial loss.',
       }
     : isMediumRisk
     ? {
-        stroke: '#f59e0b',
-        text: 'text-amber-400',
-        bgPill: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-        icon: <AlertTriangle className="w-4 h-4 text-amber-400" />,
+        border: 'border-amber-900/60 bg-amber-950/20',
+        badge: 'bg-amber-900/40 text-amber-300 border-amber-800',
+        barColor: 'bg-amber-500',
+        icon: <AlertTriangle className="w-5 h-5 text-amber-400" />,
         label: 'SUSPICIOUS WARNING',
+        desc: 'Unusual patterns detected. Exercise caution and verify identity before sending money.',
       }
     : {
-        stroke: '#10b981',
-        text: 'text-emerald-400',
-        bgPill: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-        icon: <ShieldCheck className="w-4 h-4 text-emerald-400" />,
+        border: 'border-emerald-900/60 bg-emerald-950/20',
+        badge: 'bg-emerald-900/40 text-emerald-300 border-emerald-800',
+        barColor: 'bg-emerald-500',
+        icon: <ShieldCheck className="w-5 h-5 text-emerald-400" />,
         label: 'VERIFIED SAFE',
+        desc: 'No known phishing or fraud indicators detected. Follow standard payment precautions.',
       };
 
   return (
-    <div className="flex flex-col items-center justify-center p-5 bg-slate-900 rounded-xl border border-slate-800">
-      {/* SVG Arc Gauge */}
-      <div className="relative w-40 h-40 flex items-center justify-center">
-        <svg className="w-full h-full transform -rotate-135" viewBox="0 0 130 130">
-          <circle
-            cx="65"
-            cy="65"
-            r={radius}
-            fill="none"
-            stroke="#1e293b"
-            strokeWidth="9"
-            strokeDasharray={circumference}
-            strokeDashoffset={circumference * 0.25}
-            strokeLinecap="round"
-          />
-
-          <circle
-            cx="65"
-            cy="65"
-            r={radius}
-            fill="none"
-            stroke={colorConfig.stroke}
-            strokeWidth="9"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-            strokeLinecap="round"
-          />
-        </svg>
-
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center pt-2">
-          <div className="flex items-baseline gap-0.5">
-            <span className={`text-3xl font-extrabold font-mono ${colorConfig.text}`}>
-              {score}
-            </span>
-            <span className="text-xs font-semibold text-slate-500 font-mono">
-              /{maxScore}
-            </span>
+    <div className={`p-5 rounded-lg border ${config.border} space-y-4`}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-md bg-slate-900 border border-slate-800 flex items-center justify-center flex-shrink-0">
+            {config.icon}
           </div>
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mt-0.5">
-            Threat Score
-          </span>
-          <span className="text-[11px] font-mono text-slate-400 mt-0.5">
-            {normalized}% Risk Index
-          </span>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider border ${config.badge}`}>
+                {config.label}
+              </span>
+              <span className="text-xs text-slate-400 font-mono">
+                {status}
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+              {config.desc}
+            </p>
+          </div>
+        </div>
+
+        <div className="text-left sm:text-right flex-shrink-0">
+          <div className="text-2xl font-bold font-mono text-slate-100">
+            {score} <span className="text-xs font-normal text-slate-400">/ {maxScore}</span>
+          </div>
+          <div className="text-[11px] text-slate-400">
+            Penalty Score ({normalized}% risk)
+          </div>
         </div>
       </div>
 
-      {/* Status Pill Badge */}
-      <div className="mt-2 flex flex-col items-center gap-1.5">
-        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded border text-xs font-bold tracking-wide uppercase ${colorConfig.bgPill}`}>
-          {colorConfig.icon}
-          <span>{status || colorConfig.label}</span>
+      {/* Clean Severity Bar */}
+      <div>
+        <div className="flex justify-between text-[11px] text-slate-400 mb-1 font-mono">
+          <span>Safe (0)</span>
+          <span>Suspicious (5)</span>
+          <span>High Risk (12+)</span>
         </div>
-
-        <div className="text-[11px] text-slate-400 font-mono">
-          Confidence Rating: <strong className="text-slate-200">{confidence}%</strong>
+        <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+          <div
+            className={`h-full ${config.barColor} rounded-full transition-all duration-300`}
+            style={{ width: `${Math.max(4, normalized)}%` }}
+          />
         </div>
       </div>
     </div>

@@ -6,19 +6,19 @@ export default function Terms() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
       {/* Top Navigation Bar */}
-      <header className="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-2.5 text-slate-100 hover:text-blue-400 transition-colors">
-              <div className="w-8 h-8 rounded-lg bg-blue-600/10 border border-blue-500/30 text-blue-400 flex items-center justify-center">
+      <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-30">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <Link to="/" className="flex items-center gap-2 text-slate-100 hover:text-blue-400 transition-colors">
+              <div className="w-7 h-7 rounded bg-blue-600 text-white flex items-center justify-center">
                 <Shield className="w-4 h-4" />
               </div>
-              <span className="font-extrabold text-base tracking-tight">UPI Scam Analyzer</span>
+              <span className="font-bold text-sm tracking-tight">UPI Scam Analyzer</span>
             </Link>
           </div>
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3.5 py-1.5 rounded-lg border border-slate-700 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded border border-slate-700 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to Console</span>
@@ -27,54 +27,54 @@ export default function Terms() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-10 w-full">
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-2xl space-y-8 backdrop-blur-sm">
+      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-8 w-full">
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-6 sm:p-8 space-y-7">
           {/* Header */}
-          <div className="border-b border-slate-800 pb-6">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-mono font-semibold uppercase tracking-wider mb-3">
+          <div className="border-b border-slate-800 pb-5">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-800 text-blue-400 text-[11px] font-semibold uppercase tracking-wider mb-2">
               <FileText className="w-3.5 h-3.5" />
               <span>Terms of Service</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight">
+            <h1 className="text-2xl font-bold text-slate-100 tracking-tight">
               Terms and Conditions
             </h1>
-            <p className="text-slate-400 text-xs font-mono mt-2">
+            <p className="text-slate-400 text-xs mt-1">
               Effective Date: November 17, 2026 | Last Updated: November 17, 2026
             </p>
           </div>
 
           {/* Section 1: Agreement */}
-          <section className="space-y-3">
-            <h2 className="text-lg font-bold text-slate-100">1. Agreement to Terms</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
+          <section className="space-y-2">
+            <h2 className="text-base font-bold text-slate-100">1. Agreement to Terms</h2>
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
               By accessing, browsing, or utilizing the tools provided by UPI Scam Analyzer (the "Platform", "Service", or "Utility"), you acknowledge that you have read, understood, and agreed to be bound by these Terms and Conditions. If you do not agree to these terms, you must refrain from using the platform.
             </p>
           </section>
 
           {/* Section 2: Non-Financial Entity Disclaimer */}
-          <section className="space-y-3">
-            <h2 className="text-lg font-bold text-slate-100">2. Nature of Service and Important Disclaimers</h2>
-            <div className="p-4 bg-amber-950/30 border border-amber-800/80 rounded-xl text-amber-200 text-xs leading-relaxed flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+          <section className="space-y-2.5">
+            <h2 className="text-base font-bold text-slate-100">2. Nature of Service and Important Disclaimers</h2>
+            <div className="p-3.5 bg-amber-950/30 border border-amber-800/80 rounded text-amber-200 text-xs leading-relaxed flex items-start gap-2.5">
+              <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
               <div>
-                <strong className="block text-xs font-mono uppercase tracking-wide text-amber-300 mb-1">
+                <strong className="block text-xs uppercase tracking-wide text-amber-300 mb-0.5">
                   Advisory & Educational Platform Notice
                 </strong>
                 UPI Scam Analyzer is an independent cybersecurity analysis tool designed for fraud awareness and threat assessment. The platform is NOT a bank, payment aggregator, financial institution, legal authority, or official regulatory body. We are not formally affiliated with the National Payments Corporation of India (NPCI) or the Reserve Bank of India (RBI).
               </div>
             </div>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              The risk ratings, threat scores, confidence metrics, and advice generated by the platform are algorithmic indicators derived from known scam heuristics, string patterns, and threat reports. They are provided on an "as-is" advisory basis to assist users in exercising vigilance.
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+              The risk ratings, threat scores, and advice generated by the platform are algorithmic indicators derived from known scam heuristics, string patterns, and threat reports. They are provided on an "as-is" advisory basis to assist users in exercising vigilance.
             </p>
           </section>
 
           {/* Section 3: User Responsibilities */}
-          <section className="space-y-3">
-            <h2 className="text-lg font-bold text-slate-100">3. User Responsibilities & Transaction Safety</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
+          <section className="space-y-2">
+            <h2 className="text-base font-bold text-slate-100">3. User Responsibilities & Transaction Safety</h2>
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
               You remain solely responsible for any decisions made regarding your financial transactions. When interacting with UPI handles and online payment links:
             </p>
-            <ul className="space-y-2 text-sm text-slate-300 list-disc pl-5 leading-relaxed">
+            <ul className="space-y-1.5 text-xs sm:text-sm text-slate-300 list-disc pl-5 leading-relaxed">
               <li>
                 <strong className="text-slate-100">UPI PIN Rule:</strong> You must never enter your UPI PIN to receive money. Entering your UPI PIN always authorizes an immediate debit from your bank account.
               </li>
@@ -88,13 +88,13 @@ export default function Terms() {
           </section>
 
           {/* Section 4: Emergency Fraud Procedures */}
-          <section className="space-y-3">
-            <h2 className="text-lg font-bold text-slate-100">4. Reporting Actual Financial Fraud</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
+          <section className="space-y-2">
+            <h2 className="text-base font-bold text-slate-100">4. Reporting Actual Financial Fraud</h2>
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
               Submitting a report on this platform logs information for our community database but does NOT constitute a formal police FIR or police complaint. In the event of active financial loss:
             </p>
-            <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl text-xs space-y-2 text-slate-300">
-              <div className="flex items-center gap-2 font-bold text-emerald-400 text-sm font-mono">
+            <div className="p-3.5 bg-slate-950 border border-slate-800 rounded text-xs space-y-1.5 text-slate-300">
+              <div className="flex items-center gap-2 font-bold text-emerald-400 text-xs">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 <span>Call National Cyber Crime Helpline: 1930</span>
               </div>
@@ -106,26 +106,26 @@ export default function Terms() {
                 <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" className="text-emerald-400 font-semibold underline">
                   cybercrime.gov.in
                 </a>{' '}
-                and notify your bank's fraud monitoring department immediately.
+                and notify your bank fraud monitoring department immediately.
               </p>
             </div>
           </section>
 
           {/* Section 5: Limitation of Liability */}
-          <section className="space-y-3">
-            <h2 className="text-lg font-bold text-slate-100">5. Limitation of Liability</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
+          <section className="space-y-2">
+            <h2 className="text-base font-bold text-slate-100">5. Limitation of Liability</h2>
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
               To the fullest extent permitted by applicable law, UPI Scam Analyzer and its contributors shall not be liable for any direct, indirect, incidental, consequential, or punitive damages arising out of your access to or use of the platform. We do not warrant that our heuristic algorithms will identify 100% of zero-day phishing domains or evolving scam strategies, or that legitimate identifiers will never be flagged as false positives.
             </p>
           </section>
 
           {/* Section 6: Acceptable Use */}
-          <section className="space-y-3">
-            <h2 className="text-lg font-bold text-slate-100">6. Acceptable Use and Platform Security</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
+          <section className="space-y-2">
+            <h2 className="text-base font-bold text-slate-100">6. Acceptable Use and Platform Security</h2>
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
               You agree to use this platform strictly for legitimate fraud prevention and safety verification. You agree NOT to:
             </p>
-            <ul className="space-y-1.5 text-sm text-slate-300 list-disc pl-5">
+            <ul className="space-y-1 text-xs sm:text-sm text-slate-300 list-disc pl-5">
               <li>Deploy automated scripts, bots, or scrapers against scanning APIs.</li>
               <li>Attempt to reverse-engineer, decompile, or tamper with system architecture.</li>
               <li>Submit knowingly false or defamatory scam reports against legitimate individuals or businesses.</li>
@@ -134,9 +134,9 @@ export default function Terms() {
           </section>
 
           {/* Section 7: Governing Law */}
-          <section className="space-y-3 border-t border-slate-800 pt-6">
-            <h2 className="text-lg font-bold text-slate-100">7. Governing Law and Jurisdiction</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
+          <section className="space-y-2 border-t border-slate-800 pt-5">
+            <h2 className="text-base font-bold text-slate-100">7. Governing Law and Jurisdiction</h2>
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
               These Terms and Conditions shall be governed by and interpreted in accordance with the laws of the Republic of India. Any legal disputes arising out of the use of this service shall be subject to the exclusive jurisdiction of the competent courts of India.
             </p>
           </section>
